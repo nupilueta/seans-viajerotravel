@@ -72,15 +72,41 @@ export default function TravelTasks() {
       description: form.description || '',
     };
 
-    // Log status change specifically
-    if (action === 'updated' && oldTask && oldTask.status !== form.status) {
-      base44.entities.TaskActivity.create({
-        ...baseLog,
-        action: 'status_changed',
-        field_changed: 'status',
-        old_value: oldTask.status,
-        new_value: form.status,
-      });
+    if (action === 'updated' && oldTask) {
+      // Log status change
+      if (oldTask.status !== form.status) {
+        base44.entities.TaskActivity.create({
+          ...baseLog,
+          action: 'status_changed',
+          field_changed: 'status',
+          old_value: oldTask.status,
+          new_value: form.status,
+        });
+      }
+      // Log payment status change
+      if (oldTask.payment_status !== form.payment_status) {
+        base44.entities.TaskActivity.create({
+          ...baseLog,
+          action: 'payment_changed',
+          field_changed: 'payment_status',
+          old_value: oldTask.payment_status || '—',
+          new_value: form.payment_status || '—',
+        });
+      }
+      // Log payment amount changes
+      if (oldTask.paid_amount !== form.paid_amount) {
+        base44.entities.TaskActivity.create({
+          ...baseLog,
+          action: 'payment_changed',
+          field_changed: 'paid_amount',
+          old_value: String(oldTask.paid_amount ?? '—'),
+          new_value: String(form.paid_amount ?? '—'),
+        });
+      }
+      // If none of the above, log generic update
+      if (oldTask.status === form.status && oldTask.payment_status === form.payment_status && oldTask.paid_amount === form.paid_amount) {
+        base44.entities.TaskActivity.create(baseLog);
+      }
     } else {
       base44.entities.TaskActivity.create(baseLog);
     }

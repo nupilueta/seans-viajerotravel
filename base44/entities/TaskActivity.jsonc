@@ -19,7 +19,8 @@
       "enum": [
         "created",
         "updated",
-        "status_changed"
+        "status_changed",
+        "payment_changed"
       ],
       "description": "Type of action"
     },

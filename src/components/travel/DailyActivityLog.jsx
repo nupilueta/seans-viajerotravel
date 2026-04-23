@@ -3,28 +3,37 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
-import { User, ClipboardList, ArrowRight } from 'lucide-react';
+import { User, ArrowRight } from 'lucide-react';
 
 const ACTION_STYLES = {
   created: 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30',
   updated: 'bg-blue-500/15 text-blue-600 border-blue-500/30',
   status_changed: 'bg-violet-500/15 text-violet-600 border-violet-500/30',
+  payment_changed: 'bg-amber-500/15 text-amber-600 border-amber-500/30',
 };
 
 export default function DailyActivityLog() {
   const today = format(new Date(), 'yyyy-MM-dd');
   const [selectedDate, setSelectedDate] = useState(today);
+  const [staffFilter, setStaffFilter] = useState('All');
 
   const { data: activities = [], isLoading } = useQuery({
     queryKey: ['taskActivity', selectedDate],
     queryFn: () => base44.entities.TaskActivity.filter({ activity_date: selectedDate }, '-created_date', 200),
   });
 
+  // All unique staff names for filter
+  const allStaff = ['All', ...Array.from(new Set(activities.map(a => a.staff_name).filter(Boolean))).sort()];
+
+  // Filtered activities
+  const filtered = staffFilter === 'All' ? activities : activities.filter(a => a.staff_name === staffFilter);
+
   // Summary per staff
   const staffSummary = activities.reduce((acc, a) => {
-    if (!acc[a.staff_name]) acc[a.staff_name] = { created: 0, updated: 0, status_changed: 0, total: 0 };
+    if (!acc[a.staff_name]) acc[a.staff_name] = { created: 0, updated: 0, status_changed: 0, payment_changed: 0, total: 0 };
     acc[a.staff_name][a.action] = (acc[a.staff_name][a.action] || 0) + 1;
     acc[a.staff_name].total += 1;
     return acc;
@@ -32,8 +41,8 @@ export default function DailyActivityLog() {
 
   return (
     <div className="space-y-6">
-      {/* Date picker */}
-      <div className="flex items-center gap-3">
+      {/* Date picker + staff filter */}
+      <div className="flex flex-wrap items-center gap-3">
         <label className="text-sm font-medium text-foreground">Date</label>
         <Input
           type="date"
@@ -41,7 +50,14 @@ export default function DailyActivityLog() {
           onChange={e => setSelectedDate(e.target.value)}
           className="w-44"
         />
-        <span className="text-sm text-muted-foreground">{activities.length} activities</span>
+        <label className="text-sm font-medium text-foreground ml-2">Staff</label>
+        <Select value={staffFilter} onValueChange={setStaffFilter}>
+          <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {allStaff.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <span className="text-sm text-muted-foreground">{filtered.length} activities</span>
       </div>
 
       {/* Staff summary cards */}
@@ -61,6 +77,7 @@ export default function DailyActivityLog() {
                     {counts.created > 0 && <div>{counts.created} created</div>}
                     {counts.updated > 0 && <div>{counts.updated} updated</div>}
                     {counts.status_changed > 0 && <div>{counts.status_changed} status changed</div>}
+                    {counts.payment_changed > 0 && <div>{counts.payment_changed} payment changed</div>}
                   </div>
                 </CardContent>
               </Card>
@@ -76,7 +93,7 @@ export default function DailyActivityLog() {
           <div className="space-y-2">
             {Array(5).fill(0).map((_, i) => <div key={i} className="h-14 rounded-lg bg-muted animate-pulse" />)}
           </div>
-        ) : activities.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground text-sm">
             No activity recorded for this date
           </div>
@@ -94,7 +111,7 @@ export default function DailyActivityLog() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {activities.map(a => (
+                {filtered.map(a => (
                   <tr key={a.id} className="hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
                       {a.created_date ? format(new Date(a.created_date), 'h:mm a') : '—'}

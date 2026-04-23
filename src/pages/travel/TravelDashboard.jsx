@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
-import { Users, ClipboardList, CheckCircle2, Clock, AlertCircle, TrendingUp } from 'lucide-react';
+import { Users, ClipboardList, CheckCircle2, Clock, AlertCircle, TrendingUp, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
@@ -16,6 +16,9 @@ const STATUS_COLORS = {
 };
 
 export default function TravelDashboard() {
+  const [hoveredMetric, setHoveredMetric] = useState(null);
+  const [hoverPos, setHoverPos] = useState({ x: 0, y: 0 });
+
   const { data: clients = [] } = useQuery({ queryKey: ['travel-clients'], queryFn: () => base44.entities.TravelClient.list() });
   const { data: tasks = [] } = useQuery({ queryKey: ['travel-tasks'], queryFn: () => base44.entities.TravelTask.list() });
 
@@ -24,6 +27,14 @@ export default function TravelDashboard() {
   const completed = tasks.filter(t => t.status === 'Completed').length;
   const inProgress = tasks.filter(t => t.status === 'In Progress').length;
   const overdue = tasks.filter(t => t.overdue_flag === 'Overdue').length;
+
+  // Task lists per metric for hover popup
+  const tasksByMetric = {
+    'Total Tasks': tasks,
+    'Completed': tasks.filter(t => t.status === 'Completed'),
+    'In Progress': tasks.filter(t => t.status === 'In Progress'),
+    'Overdue': tasks.filter(t => t.overdue_flag === 'Overdue'),
+  };
 
   // Status distribution
   const statusCounts = {};
@@ -55,6 +66,14 @@ export default function TravelDashboard() {
     { label: 'Completion Rate', value: totalTasks ? `${Math.round((completed / totalTasks) * 100)}%` : '0%', icon: TrendingUp, color: 'text-violet-400', bg: 'bg-violet-400/10' },
   ];
 
+  const handleMetricMouseEnter = (label, e) => {
+    if (tasksByMetric[label]) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      setHoverPos({ x: rect.left, y: rect.bottom + 8 });
+      setHoveredMetric(label);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -65,7 +84,12 @@ export default function TravelDashboard() {
       {/* Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {metrics.map(({ label, value, icon: Icon, color, bg }) => (
-          <Card key={label} className="p-4">
+          <Card
+            key={label}
+            className={`p-4 transition-shadow ${tasksByMetric[label] ? 'cursor-pointer hover:shadow-md' : ''}`}
+            onMouseEnter={(e) => handleMetricMouseEnter(label, e)}
+            onMouseLeave={() => setHoveredMetric(null)}
+          >
             <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center mb-2`}>
               <Icon className={`w-4 h-4 ${color}`} />
             </div>
@@ -74,6 +98,41 @@ export default function TravelDashboard() {
           </Card>
         ))}
       </div>
+
+      {/* Hover popup for task list */}
+      {hoveredMetric && tasksByMetric[hoveredMetric] && (
+        <div
+          className="fixed z-50 bg-card border border-border rounded-xl shadow-xl p-4 w-80 max-h-72 overflow-y-auto"
+          style={{ left: Math.min(hoverPos.x, window.innerWidth - 340), top: hoverPos.y }}
+          onMouseEnter={() => setHoveredMetric(hoveredMetric)}
+          onMouseLeave={() => setHoveredMetric(null)}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-semibold">{hoveredMetric} ({tasksByMetric[hoveredMetric].length})</h4>
+            <button onClick={() => setHoveredMetric(null)}><X className="w-4 h-4 text-muted-foreground" /></button>
+          </div>
+          {tasksByMetric[hoveredMetric].length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">No tasks</p>
+          ) : (
+            <div className="space-y-2">
+              {tasksByMetric[hoveredMetric].slice(0, 15).map(t => (
+                <div key={t.id} className="flex items-start gap-2 p-2 rounded-lg bg-muted/40 text-xs">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{t.description || '(no description)'}</p>
+                    <p className="text-muted-foreground">{t.client_name} · {t.assigned_to}</p>
+                  </div>
+                  <span className="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium" style={{ backgroundColor: (STATUS_COLORS[t.status] || '#94a3b8') + '30', color: STATUS_COLORS[t.status] || '#94a3b8' }}>
+                    {t.status}
+                  </span>
+                </div>
+              ))}
+              {tasksByMetric[hoveredMetric].length > 15 && (
+                <p className="text-center text-xs text-muted-foreground pt-1">+{tasksByMetric[hoveredMetric].length - 15} more</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Staff Workload */}
