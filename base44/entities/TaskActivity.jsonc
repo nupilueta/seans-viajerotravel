@@ -1,0 +1,54 @@
+{
+  "name": "TaskActivity",
+  "type": "object",
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "description": "Task record ID"
+    },
+    "task_code": {
+      "type": "string",
+      "description": "Task code e.g. T-0001"
+    },
+    "staff_name": {
+      "type": "string",
+      "description": "Staff who performed the action"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "created",
+        "updated",
+        "status_changed"
+      ],
+      "description": "Type of action"
+    },
+    "field_changed": {
+      "type": "string",
+      "description": "Which field was changed (for updates)"
+    },
+    "old_value": {
+      "type": "string"
+    },
+    "new_value": {
+      "type": "string"
+    },
+    "activity_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the activity"
+    },
+    "client_name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string",
+      "description": "Task description summary"
+    }
+  },
+  "required": [
+    "staff_name",
+    "action",
+    "activity_date"
+  ]
+}

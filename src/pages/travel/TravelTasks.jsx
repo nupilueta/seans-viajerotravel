@@ -57,11 +57,43 @@ export default function TravelTasks() {
     return matchSearch && matchStatus && matchPriority && matchService;
   });
 
+  const logActivity = (action, form, oldTask = null) => {
+    const today = new Date().toISOString().split('T')[0];
+    const staffNames = (form.assigned_to || '').split(',').map(s => s.trim()).filter(Boolean);
+    const staff = staffNames[0] || 'Admin';
+
+    const baseLog = {
+      task_id: form.id || '',
+      task_code: form.task_id || '',
+      staff_name: staff,
+      action,
+      activity_date: today,
+      client_name: form.client_name || '',
+      description: form.description || '',
+    };
+
+    // Log status change specifically
+    if (action === 'updated' && oldTask && oldTask.status !== form.status) {
+      base44.entities.TaskActivity.create({
+        ...baseLog,
+        action: 'status_changed',
+        field_changed: 'status',
+        old_value: oldTask.status,
+        new_value: form.status,
+      });
+    } else {
+      base44.entities.TaskActivity.create(baseLog);
+    }
+  };
+
   const handleSave = (form) => {
     if (editing) {
+      logActivity('updated', form, editing);
       updateMut.mutate({ id: editing.id, data: form });
     } else {
-      createMut.mutate(form);
+      createMut.mutate(form, {
+        onSuccess: (created) => logActivity('created', { ...form, id: created?.id }),
+      });
     }
     setDialogOpen(false);
     setEditing(null);
@@ -104,7 +136,12 @@ export default function TravelTasks() {
         isLoading={isLoading}
         onEdit={(task) => { setEditing(task); setDialogOpen(true); }}
         onDelete={(id) => deleteMut.mutate(id)}
-        onStatusChange={(task, status) => updateMut.mutate({ id: task.id, data: { ...task, status } })}
+        onStatusChange={(task, status) => {
+          const today = new Date().toISOString().split('T')[0];
+          const staff = (task.assigned_to || '').split(',')[0].trim() || 'Admin';
+          base44.entities.TaskActivity.create({ task_id: task.id, task_code: task.task_id || '', staff_name: staff, action: 'status_changed', field_changed: 'status', old_value: task.status, new_value: status, activity_date: today, client_name: task.client_name || '', description: task.description || '' });
+          updateMut.mutate({ id: task.id, data: { ...task, status } });
+        }}
         isAdmin={true}
       />
 

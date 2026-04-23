@@ -59,12 +59,40 @@ export default function MyTasks() {
     return matchSearch && matchStatus;
   });
 
+  const logActivity = (action, form, oldTask = null) => {
+    const today = new Date().toISOString().split('T')[0];
+    const staff = staffName || form.assigned_to || 'Staff';
+    const baseLog = {
+      task_id: form.id || '',
+      task_code: form.task_id || '',
+      staff_name: staff,
+      action,
+      activity_date: today,
+      client_name: form.client_name || '',
+      description: form.description || '',
+    };
+    if (action === 'updated' && oldTask && oldTask.status !== form.status) {
+      base44.entities.TaskActivity.create({
+        ...baseLog,
+        action: 'status_changed',
+        field_changed: 'status',
+        old_value: oldTask.status,
+        new_value: form.status,
+      });
+    } else {
+      base44.entities.TaskActivity.create(baseLog);
+    }
+  };
+
   const handleSave = (form) => {
     const data = { ...form, assigned_to: staffName || form.assigned_to };
     if (editing) {
+      logActivity('updated', data, editing);
       updateMut.mutate({ id: editing.id, data });
     } else {
-      createMut.mutate(data);
+      createMut.mutate(data, {
+        onSuccess: (created) => logActivity('created', { ...data, id: created?.id }),
+      });
     }
     setDialogOpen(false);
     setEditing(null);
@@ -105,7 +133,12 @@ export default function MyTasks() {
         isLoading={isLoading}
         onEdit={(task) => { setEditing(task); setDialogOpen(true); }}
         onDelete={null}
-        onStatusChange={(task, status) => updateMut.mutate({ id: task.id, data: { ...task, status } })}
+        onStatusChange={(task, status) => {
+          const today = new Date().toISOString().split('T')[0];
+          const staff = staffName || (task.assigned_to || '').split(',')[0].trim() || 'Staff';
+          base44.entities.TaskActivity.create({ task_id: task.id, task_code: task.task_id || '', staff_name: staff, action: 'status_changed', field_changed: 'status', old_value: task.status, new_value: status, activity_date: today, client_name: task.client_name || '', description: task.description || '' });
+          updateMut.mutate({ id: task.id, data: { ...task, status } });
+        }}
         isAdmin={false}
       />
 
