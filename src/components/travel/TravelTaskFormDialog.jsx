@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,14 +15,31 @@ const DEFAULTS = {
   payment_status: '', quoted_amount: '', paid_amount: '', balance: '', notes: '', progress: 0,
 };
 
-const STAFF = ['JUN', 'NORBY', 'GEMMA', 'KAITO', 'ALDRIN', 'NICHOLE', 'RED', 'RHONA', 'RONIE', 'LENY'];
-const STATUSES = ['Not Started', 'In Progress', 'Waiting for Client', 'Submitted', 'Completed', 'Cancelled'];
-const PRIORITIES = ['High', 'Medium', 'Low'];
-const SERVICE_TYPES = ['Visa Processing', 'Airline Ticket', 'Tour Package', 'Hotel Booking', 'Travel Insurance', 'Receipt', 'Credit Card Payment', 'Other'];
-const PAYMENT_STATUSES = ['Unpaid', 'Partial', 'Paid', 'With Balance', 'Accounts Receivable', 'Not Applicable'];
+// Fallback defaults in case settings haven't loaded
+const DEFAULT_STAFF = ['JUN', 'NORBY', 'GEMMA', 'KAITO', 'ALDRIN', 'NICHOLE', 'RED', 'RHONA', 'RONIE', 'LENY'];
+const DEFAULT_STATUSES = ['Not Started', 'In Progress', 'Waiting for Client', 'Submitted', 'Completed', 'Cancelled'];
+const DEFAULT_PRIORITIES = ['High', 'Medium', 'Low'];
+const DEFAULT_SERVICE_TYPES = ['Visa Processing', 'Airline Ticket', 'Tour Package', 'Hotel Booking', 'Travel Insurance', 'Receipt', 'Credit Card Payment', 'Other'];
+const DEFAULT_PAYMENT_STATUSES = ['Unpaid', 'Partial', 'Paid', 'With Balance', 'Accounts Receivable', 'Not Applicable'];
 
 export default function TravelTaskFormDialog({ open, onOpenChange, task, clients = [], onSave, isAdmin }) {
   const [form, setForm] = useState(DEFAULTS);
+
+  const { data: allSettings = [] } = useQuery({
+    queryKey: ['taskSettings'],
+    queryFn: () => base44.entities.TaskSettings.list('sort_order', 200),
+  });
+
+  const getOptions = (type, fallback) => {
+    const items = allSettings.filter(s => s.setting_type === type && s.is_active).map(s => s.value);
+    return items.length > 0 ? items : fallback;
+  };
+
+  const STAFF = getOptions('staff', DEFAULT_STAFF);
+  const STATUSES = getOptions('status', DEFAULT_STATUSES);
+  const PRIORITIES = getOptions('priority', DEFAULT_PRIORITIES);
+  const SERVICE_TYPES = getOptions('service_type', DEFAULT_SERVICE_TYPES);
+  const PAYMENT_STATUSES = getOptions('payment_status', DEFAULT_PAYMENT_STATUSES);
 
   useEffect(() => {
     if (open) {

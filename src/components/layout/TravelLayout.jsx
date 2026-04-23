@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, ClipboardList, Menu, X, Plane, LogOut, ShieldCheck, User } from 'lucide-react';
+import { LayoutDashboard, Users, ClipboardList, Menu, X, Plane, LogOut, ShieldCheck, User, Settings } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -8,6 +8,7 @@ const adminNav = [
   { label: 'Dashboard', path: '/travel', icon: LayoutDashboard },
   { label: 'Clients', path: '/travel/clients', icon: Users },
   { label: 'Tasks', path: '/travel/tasks', icon: ClipboardList },
+  { label: 'Settings', path: '/travel/settings', icon: Settings },
 ];
 
 const employeeNav = [

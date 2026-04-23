@@ -15,6 +15,7 @@ import TravelDashboard from './pages/travel/TravelDashboard';
 import TravelClients from './pages/travel/TravelClients';
 import TravelTasks from './pages/travel/TravelTasks';
 import MyTasks from './pages/travel/MyTasks';
+import TravelSettings from './pages/travel/Settings';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -48,6 +49,7 @@ const AuthenticatedApp = () => {
         <Route path="/travel/clients" element={<TravelClients />} />
         <Route path="/travel/tasks" element={<TravelTasks />} />
         <Route path="/travel/my-tasks" element={<MyTasks />} />
+        <Route path="/travel/settings" element={<TravelSettings />} />
       </Route>
       <Route element={<AppLayout />}>
         <Route path="/ops" element={<Dashboard />} />
