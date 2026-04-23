@@ -162,7 +162,7 @@ export default function MyTasks() {
         task={editing}
         clients={clients}
         onSave={handleSave}
-        isAdmin={false}
+        isAdmin={true}
       />
     </div>
   );
