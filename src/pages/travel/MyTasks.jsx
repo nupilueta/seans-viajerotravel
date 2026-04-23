@@ -85,34 +85,30 @@ export default function MyTasks() {
       description: form.description || '',
     };
     if (action === 'updated' && oldTask) {
-      if (oldTask.status !== form.status) {
-        base44.entities.TaskActivity.create({
-          ...baseLog,
-          action: 'status_changed',
-          field_changed: 'status',
-          old_value: oldTask.status,
-          new_value: form.status,
-        });
+      const PAYMENT_FIELDS = ['payment_status', 'quoted_amount', 'paid_amount', 'balance'];
+      const TRACKED_FIELDS = [
+        'status', 'description', 'assigned_to', 'due_date', 'start_date',
+        'priority', 'service_type', 'client_name', 'notes', 'progress',
+        ...PAYMENT_FIELDS,
+      ];
+
+      let anyLogged = false;
+      for (const field of TRACKED_FIELDS) {
+        const oldVal = String(oldTask[field] ?? '');
+        const newVal = String(form[field] ?? '');
+        if (oldVal !== newVal) {
+          const isPayment = PAYMENT_FIELDS.includes(field);
+          base44.entities.TaskActivity.create({
+            ...baseLog,
+            action: field === 'status' ? 'status_changed' : isPayment ? 'payment_changed' : 'updated',
+            field_changed: field,
+            old_value: oldVal || '—',
+            new_value: newVal || '—',
+          });
+          anyLogged = true;
+        }
       }
-      if (oldTask.payment_status !== form.payment_status) {
-        base44.entities.TaskActivity.create({
-          ...baseLog,
-          action: 'payment_changed',
-          field_changed: 'payment_status',
-          old_value: oldTask.payment_status || '—',
-          new_value: form.payment_status || '—',
-        });
-      }
-      if (oldTask.paid_amount !== form.paid_amount) {
-        base44.entities.TaskActivity.create({
-          ...baseLog,
-          action: 'payment_changed',
-          field_changed: 'paid_amount',
-          old_value: String(oldTask.paid_amount ?? '—'),
-          new_value: String(form.paid_amount ?? '—'),
-        });
-      }
-      if (oldTask.status === form.status && oldTask.payment_status === form.payment_status && oldTask.paid_amount === form.paid_amount) {
+      if (!anyLogged) {
         base44.entities.TaskActivity.create(baseLog);
       }
     } else {
