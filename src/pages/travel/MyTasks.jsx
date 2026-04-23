@@ -84,14 +84,37 @@ export default function MyTasks() {
       client_name: form.client_name || '',
       description: form.description || '',
     };
-    if (action === 'updated' && oldTask && oldTask.status !== form.status) {
-      base44.entities.TaskActivity.create({
-        ...baseLog,
-        action: 'status_changed',
-        field_changed: 'status',
-        old_value: oldTask.status,
-        new_value: form.status,
-      });
+    if (action === 'updated' && oldTask) {
+      if (oldTask.status !== form.status) {
+        base44.entities.TaskActivity.create({
+          ...baseLog,
+          action: 'status_changed',
+          field_changed: 'status',
+          old_value: oldTask.status,
+          new_value: form.status,
+        });
+      }
+      if (oldTask.payment_status !== form.payment_status) {
+        base44.entities.TaskActivity.create({
+          ...baseLog,
+          action: 'payment_changed',
+          field_changed: 'payment_status',
+          old_value: oldTask.payment_status || '—',
+          new_value: form.payment_status || '—',
+        });
+      }
+      if (oldTask.paid_amount !== form.paid_amount) {
+        base44.entities.TaskActivity.create({
+          ...baseLog,
+          action: 'payment_changed',
+          field_changed: 'paid_amount',
+          old_value: String(oldTask.paid_amount ?? '—'),
+          new_value: String(form.paid_amount ?? '—'),
+        });
+      }
+      if (oldTask.status === form.status && oldTask.payment_status === form.payment_status && oldTask.paid_amount === form.paid_amount) {
+        base44.entities.TaskActivity.create(baseLog);
+      }
     } else {
       base44.entities.TaskActivity.create(baseLog);
     }
