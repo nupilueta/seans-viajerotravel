@@ -168,7 +168,7 @@ export default function TravelTasks() {
           base44.entities.TaskActivity.create({ task_id: task.id, task_code: task.task_id || '', staff_name: staff, action: 'status_changed', field_changed: 'status', old_value: task.status, new_value: status, activity_date: today, client_name: task.client_name || '', description: task.description || '' });
           updateMut.mutate({ id: task.id, data: { ...task, status } });
         }}
-        isAdmin={false}
+        isAdmin={true}
       />
 
       <TravelTaskFormDialog
