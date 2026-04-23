@@ -1,0 +1,65 @@
+{
+  "name": "MonitoredSystem",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "System or service name"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "server",
+        "database",
+        "api",
+        "service",
+        "network",
+        "storage"
+      ],
+      "default": "server"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "healthy",
+        "warning",
+        "critical",
+        "offline",
+        "maintenance"
+      ],
+      "default": "healthy"
+    },
+    "uptime_percent": {
+      "type": "number",
+      "description": "Uptime percentage"
+    },
+    "cpu_usage": {
+      "type": "number",
+      "description": "Current CPU usage %"
+    },
+    "memory_usage": {
+      "type": "number",
+      "description": "Current memory usage %"
+    },
+    "response_time_ms": {
+      "type": "number",
+      "description": "Average response time in ms"
+    },
+    "url": {
+      "type": "string",
+      "description": "Endpoint URL"
+    },
+    "region": {
+      "type": "string",
+      "description": "Deployment region"
+    },
+    "last_checked": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "name",
+    "status"
+  ]
+}

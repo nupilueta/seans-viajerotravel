@@ -1,0 +1,65 @@
+{
+  "name": "Task",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Task name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Task details"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_progress",
+        "completed",
+        "failed",
+        "paused"
+      ],
+      "default": "pending"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium"
+    },
+    "assignee": {
+      "type": "string",
+      "description": "Person responsible"
+    },
+    "progress": {
+      "type": "number",
+      "description": "Completion percentage 0-100",
+      "default": 0
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "deployment",
+        "maintenance",
+        "monitoring",
+        "security",
+        "backup",
+        "optimization",
+        "other"
+      ],
+      "default": "other"
+    }
+  },
+  "required": [
+    "title",
+    "status"
+  ]
+}

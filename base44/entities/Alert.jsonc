@@ -1,0 +1,40 @@
+{
+  "name": "Alert",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Alert title"
+    },
+    "message": {
+      "type": "string",
+      "description": "Alert details"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "error",
+        "critical"
+      ],
+      "default": "info"
+    },
+    "source": {
+      "type": "string",
+      "description": "Which system or task triggered this"
+    },
+    "is_resolved": {
+      "type": "boolean",
+      "default": false
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "title",
+    "severity"
+  ]
+}
