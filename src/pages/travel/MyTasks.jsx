@@ -20,7 +20,20 @@ export default function MyTasks() {
   const [editing, setEditing] = useState(null);
   const qc = useQueryClient();
 
-  const staffName = user?.full_name?.toUpperCase() || user?.email?.split('@')[0]?.toUpperCase() || '';
+  const { data: staffSettings = [] } = useQuery({
+    queryKey: ['taskSettings'],
+    queryFn: () => base44.entities.TaskSettings.filter({ setting_type: 'staff', is_active: true }, 'sort_order', 100),
+  });
+
+  // Match user to a staff name: check if any staff value appears in user's full_name or email
+  const staffName = (() => {
+    if (!user) return '';
+    const userUpper = ((user.full_name || '') + ' ' + (user.email || '')).toUpperCase();
+    const match = staffSettings.find(s => userUpper.includes(s.value.toUpperCase()));
+    if (match) return match.value;
+    // fallback: use first part of email or full_name uppercased
+    return user.full_name?.toUpperCase() || user.email?.split('@')[0]?.toUpperCase() || '';
+  })();
 
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ['travel-tasks'],
@@ -42,11 +55,11 @@ export default function MyTasks() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['travel-tasks'] }),
   });
 
-  // Show tasks assigned to this employee
+  // Show only tasks assigned to this employee by matching staff name
   const myTasks = tasks.filter(t => {
-    if (!staffName) return true;
-    const assigned = (t.assigned_to || '').toUpperCase();
-    return assigned.includes(staffName) || assigned.includes((user?.full_name || '').toUpperCase());
+    if (!staffName) return false;
+    const assignedNames = (t.assigned_to || '').split(',').map(s => s.trim().toUpperCase());
+    return assignedNames.some(name => name === staffName.toUpperCase() || name.includes(staffName.toUpperCase()));
   });
 
   const filtered = myTasks.filter(t => {
@@ -85,7 +98,8 @@ export default function MyTasks() {
   };
 
   const handleSave = (form) => {
-    const data = { ...form, assigned_to: staffName || form.assigned_to };
+    // On create, always assign to current employee; on edit, keep existing assignment
+    const data = { ...form, assigned_to: editing ? (form.assigned_to || staffName) : staffName };
     if (editing) {
       logActivity('updated', data, editing);
       updateMut.mutate({ id: editing.id, data });
