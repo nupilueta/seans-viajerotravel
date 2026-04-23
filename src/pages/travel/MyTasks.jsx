@@ -1,0 +1,122 @@
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Search } from 'lucide-react';
+import TravelTaskTable from '@/components/travel/TravelTaskTable';
+import TravelTaskFormDialog from '@/components/travel/TravelTaskFormDialog';
+import { useAuth } from '@/lib/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+
+const STATUSES = ['All', 'Not Started', 'In Progress', 'Waiting for Client', 'Submitted', 'Completed', 'Cancelled'];
+
+export default function MyTasks() {
+  const { user } = useAuth();
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const qc = useQueryClient();
+
+  const staffName = user?.full_name?.toUpperCase() || user?.email?.split('@')[0]?.toUpperCase() || '';
+
+  const { data: tasks = [], isLoading } = useQuery({
+    queryKey: ['travel-tasks'],
+    queryFn: () => base44.entities.TravelTask.list('-created_date', 500),
+  });
+
+  const { data: clients = [] } = useQuery({
+    queryKey: ['travel-clients'],
+    queryFn: () => base44.entities.TravelClient.list(),
+  });
+
+  const updateMut = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.TravelTask.update(id, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['travel-tasks'] }),
+  });
+
+  const createMut = useMutation({
+    mutationFn: data => base44.entities.TravelTask.create(data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['travel-tasks'] }),
+  });
+
+  // Show tasks assigned to this employee
+  const myTasks = tasks.filter(t => {
+    if (!staffName) return true;
+    const assigned = (t.assigned_to || '').toUpperCase();
+    return assigned.includes(staffName) || assigned.includes((user?.full_name || '').toUpperCase());
+  });
+
+  const filtered = myTasks.filter(t => {
+    const q = search.toLowerCase();
+    const matchSearch = !q ||
+      (t.description || '').toLowerCase().includes(q) ||
+      (t.client_name || '').toLowerCase().includes(q) ||
+      (t.task_id || '').toLowerCase().includes(q);
+    const matchStatus = statusFilter === 'All' || t.status === statusFilter;
+    return matchSearch && matchStatus;
+  });
+
+  const handleSave = (form) => {
+    const data = { ...form, assigned_to: staffName || form.assigned_to };
+    if (editing) {
+      updateMut.mutate({ id: editing.id, data });
+    } else {
+      createMut.mutate(data);
+    }
+    setDialogOpen(false);
+    setEditing(null);
+  };
+
+  // Summary
+  const pending = myTasks.filter(t => t.status === 'Not Started').length;
+  const inProgress = myTasks.filter(t => t.status === 'In Progress').length;
+  const completed = myTasks.filter(t => t.status === 'Completed').length;
+
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">My Tasks</h1>
+          <p className="text-muted-foreground text-sm">
+            {pending} pending · {inProgress} in progress · {completed} completed
+          </p>
+        </div>
+        <Button onClick={() => { setEditing(null); setDialogOpen(true); }} className="gap-2">
+          <Plus className="w-4 h-4" /> Add Task
+        </Button>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input className="pl-9" placeholder="Search your tasks..." value={search} onChange={e => setSearch(e.target.value)} />
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-full sm:w-48"><SelectValue /></SelectTrigger>
+          <SelectContent>{STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+        </Select>
+      </div>
+
+      <TravelTaskTable
+        tasks={filtered}
+        isLoading={isLoading}
+        onEdit={(task) => { setEditing(task); setDialogOpen(true); }}
+        onDelete={null}
+        onStatusChange={(task, status) => updateMut.mutate({ id: task.id, data: { ...task, status } })}
+        isAdmin={false}
+      />
+
+      <TravelTaskFormDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        task={editing}
+        clients={clients}
+        onSave={handleSave}
+        isAdmin={false}
+      />
+    </div>
+  );
+}

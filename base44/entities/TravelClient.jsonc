@@ -1,0 +1,119 @@
+{
+  "name": "TravelClient",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Client code e.g. CL-0001"
+    },
+    "title": {
+      "type": "string",
+      "description": "Title e.g. Mr, Ms, Atty, Dir"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "middle_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "full_name": {
+      "type": "string"
+    },
+    "sex": {
+      "type": "string",
+      "enum": [
+        "Male",
+        "Female",
+        ""
+      ]
+    },
+    "birthday": {
+      "type": "string",
+      "format": "date"
+    },
+    "mobile": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "company": {
+      "type": "string"
+    },
+    "department": {
+      "type": "string"
+    },
+    "position": {
+      "type": "string"
+    },
+    "passport_number": {
+      "type": "string"
+    },
+    "passport_expiration": {
+      "type": "string"
+    },
+    "travel_type": {
+      "type": "string",
+      "enum": [
+        "Solo",
+        "Couple",
+        "Family",
+        "Group",
+        "Corporate",
+        ""
+      ]
+    },
+    "preferred_destination": {
+      "type": "string"
+    },
+    "lead_source": {
+      "type": "string",
+      "enum": [
+        "Referral",
+        "Walk-in",
+        "Facebook",
+        "Sister/Brother",
+        ""
+      ]
+    },
+    "preferred_contact": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "last_contact_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "next_followup_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "owner_staff": {
+      "type": "string"
+    },
+    "consent": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "first_name",
+    "last_name"
+  ]
+}

@@ -10,6 +10,11 @@ import Dashboard from './pages/Dashboard';
 import Tasks from './pages/Tasks';
 import Systems from './pages/Systems';
 import Alerts from './pages/Alerts';
+import TravelLayout from './components/layout/TravelLayout';
+import TravelDashboard from './pages/travel/TravelDashboard';
+import TravelClients from './pages/travel/TravelClients';
+import TravelTasks from './pages/travel/TravelTasks';
+import MyTasks from './pages/travel/MyTasks';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -37,11 +42,18 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
+      <Route element={<TravelLayout />}>
+        <Route path="/" element={<TravelDashboard />} />
+        <Route path="/travel" element={<TravelDashboard />} />
+        <Route path="/travel/clients" element={<TravelClients />} />
+        <Route path="/travel/tasks" element={<TravelTasks />} />
+        <Route path="/travel/my-tasks" element={<MyTasks />} />
+      </Route>
       <Route element={<AppLayout />}>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/tasks" element={<Tasks />} />
-        <Route path="/systems" element={<Systems />} />
-        <Route path="/alerts" element={<Alerts />} />
+        <Route path="/ops" element={<Dashboard />} />
+        <Route path="/ops/tasks" element={<Tasks />} />
+        <Route path="/ops/systems" element={<Systems />} />
+        <Route path="/ops/alerts" element={<Alerts />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

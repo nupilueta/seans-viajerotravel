@@ -1,0 +1,105 @@
+{
+  "name": "TravelTask",
+  "type": "object",
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "description": "Task code e.g. T-0001"
+    },
+    "client_id": {
+      "type": "string",
+      "description": "Client code reference"
+    },
+    "client_name": {
+      "type": "string"
+    },
+    "client_contact": {
+      "type": "string"
+    },
+    "service_type": {
+      "type": "string",
+      "enum": [
+        "Visa Processing",
+        "Airline Ticket",
+        "Tour Package",
+        "Hotel Booking",
+        "Travel Insurance",
+        "Receipt",
+        "Credit Card Payment",
+        "Other"
+      ]
+    },
+    "description": {
+      "type": "string"
+    },
+    "assigned_to": {
+      "type": "string",
+      "description": "Staff name(s)"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Not Started",
+        "In Progress",
+        "Waiting for Client",
+        "Submitted",
+        "Completed",
+        "Cancelled"
+      ],
+      "default": "Not Started"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "High",
+        "Medium",
+        "Low"
+      ],
+      "default": "High"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "Unpaid",
+        "Partial",
+        "Paid",
+        "With Balance",
+        "Accounts Receivable",
+        "Not Applicable",
+        ""
+      ]
+    },
+    "quoted_amount": {
+      "type": "number"
+    },
+    "paid_amount": {
+      "type": "number"
+    },
+    "balance": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "overdue_flag": {
+      "type": "string"
+    },
+    "progress": {
+      "type": "number",
+      "default": 0,
+      "description": "0-100"
+    }
+  },
+  "required": [
+    "description",
+    "status"
+  ]
+}
