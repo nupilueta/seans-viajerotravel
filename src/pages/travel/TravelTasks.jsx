@@ -26,7 +26,7 @@ export default function TravelTasks() {
 
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ['travel-tasks'],
-    queryFn: () => base44.entities.TravelTask.list('task_id', 500),
+    queryFn: () => base44.entities.TravelTask.list('-created_date', 500),
   });
 
   const { data: clients = [] } = useQuery({
