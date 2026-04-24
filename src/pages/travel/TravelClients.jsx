@@ -31,7 +31,10 @@ export default function TravelClients() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['travel-clients'] }),
   });
   const updateMut = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.TravelClient.update(id, data),
+    mutationFn: ({ id, data }) => {
+      const { id: _id, ...cleanData } = data;
+      return base44.entities.TravelClient.update(id, cleanData);
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['travel-clients'] }),
   });
   const deleteMut = useMutation({
