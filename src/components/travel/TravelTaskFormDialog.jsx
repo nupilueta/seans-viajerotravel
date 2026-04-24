@@ -61,6 +61,7 @@ export default function TravelTaskFormDialog({ open, onOpenChange, task, clients
       setClientSearch(task.client_name || '');
     } else {
       setClientSearch('');
+      setForm({ ...DEFAULTS });
       // Auto-generate next task ID - fetch all tasks to find the true max
       base44.entities.TravelTask.list('task_id', 2000).then(allTasks => {
         const nums = allTasks
@@ -69,7 +70,7 @@ export default function TravelTaskFormDialog({ open, onOpenChange, task, clients
           .map(c => parseInt(c.replace('T-', ''), 10));
         const nextNum = nums.length > 0 ? Math.max(...nums) + 1 : 1;
         const nextId = `T-${String(nextNum).padStart(4, '0')}`;
-        setForm({ ...DEFAULTS, task_id: nextId });
+        setForm(f => ({ ...f, task_id: nextId }));
       });
     }
   }, [open, task?.id]);
@@ -106,12 +107,14 @@ export default function TravelTaskFormDialog({ open, onOpenChange, task, clients
     : null;
 
   const handleSave = () => {
+    const { id, ...formData } = form;
     onSave({
-      ...form,
-      quoted_amount: form.quoted_amount ? Number(form.quoted_amount) : undefined,
-      paid_amount: form.paid_amount ? Number(form.paid_amount) : undefined,
-      balance: form.balance ? Number(form.balance) : undefined,
-      progress: Number(form.progress) || 0,
+      ...formData,
+      ...(task ? { id } : {}), // only include id when editing
+      quoted_amount: formData.quoted_amount ? Number(formData.quoted_amount) : undefined,
+      paid_amount: formData.paid_amount ? Number(formData.paid_amount) : undefined,
+      balance: formData.balance ? Number(formData.balance) : undefined,
+      progress: Number(formData.progress) || 0,
     });
   };
 
