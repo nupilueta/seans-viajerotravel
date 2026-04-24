@@ -61,13 +61,13 @@ export default function TravelTaskFormDialog({ open, onOpenChange, task, clients
       setClientSearch(task.client_name || '');
     } else {
       setClientSearch('');
-      // Auto-generate next task ID
-      base44.entities.TravelTask.list('task_id', 500).then(allTasks => {
-        const codes = allTasks
+      // Auto-generate next task ID - fetch all tasks to find the true max
+      base44.entities.TravelTask.list('task_id', 2000).then(allTasks => {
+        const nums = allTasks
           .map(t => t.task_id)
           .filter(c => /^T-\d+$/.test(c))
           .map(c => parseInt(c.replace('T-', ''), 10));
-        const nextNum = codes.length > 0 ? Math.max(...codes) + 1 : 1;
+        const nextNum = nums.length > 0 ? Math.max(...nums) + 1 : 1;
         const nextId = `T-${String(nextNum).padStart(4, '0')}`;
         setForm({ ...DEFAULTS, task_id: nextId });
       });
