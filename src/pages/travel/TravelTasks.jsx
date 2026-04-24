@@ -123,18 +123,12 @@ export default function TravelTasks() {
     setEditing(null);
   };
 
-  const pending = tasks.filter(t => t.status === 'Not Started').length;
-  const inProgress = tasks.filter(t => t.status === 'In Progress').length;
-  const completed = tasks.filter(t => t.status === 'Completed').length;
-
   return (
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Task Manager</h1>
-          <p className="text-muted-foreground text-sm">
-            {pending} pending · {inProgress} in progress · {completed} completed
-          </p>
+          <p className="text-muted-foreground text-sm">{filtered.length} of {tasks.length} tasks</p>
         </div>
         <Button onClick={() => { setEditing(null); setDialogOpen(true); }} className="gap-2">
           <Plus className="w-4 h-4" /> Add Task

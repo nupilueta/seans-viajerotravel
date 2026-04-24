@@ -12,11 +12,15 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 
 const STATUSES = ['All', 'Not Started', 'In Progress', 'Waiting for Client', 'Submitted', 'Completed', 'Cancelled'];
+const PRIORITIES = ['All', 'High', 'Medium', 'Low'];
+const SERVICE_TYPES = ['All', 'Visa Processing', 'Airline Ticket', 'Tour Package', 'Hotel Booking', 'Travel Insurance', 'Receipt', 'Credit Card Payment', 'Other'];
 
 export default function MyTasks() {
   const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [priorityFilter, setPriorityFilter] = useState('All');
+  const [serviceFilter, setServiceFilter] = useState('All');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -78,9 +82,12 @@ export default function MyTasks() {
     const matchSearch = !q ||
       (t.description || '').toLowerCase().includes(q) ||
       (t.client_name || '').toLowerCase().includes(q) ||
-      (t.task_id || '').toLowerCase().includes(q);
+      (t.task_id || '').toLowerCase().includes(q) ||
+      (t.assigned_to || '').toLowerCase().includes(q);
     const matchStatus = statusFilter === 'All' || t.status === statusFilter;
-    return matchSearch && matchStatus;
+    const matchPriority = priorityFilter === 'All' || t.priority === priorityFilter;
+    const matchService = serviceFilter === 'All' || t.service_type === serviceFilter;
+    return matchSearch && matchStatus && matchPriority && matchService;
   });
 
   const logActivity = (action, form, oldTask = null) => {
@@ -140,19 +147,12 @@ export default function MyTasks() {
     setEditing(null);
   };
 
-  // Summary
-  const pending = myTasks.filter(t => t.status === 'Not Started').length;
-  const inProgress = myTasks.filter(t => t.status === 'In Progress').length;
-  const completed = myTasks.filter(t => t.status === 'Completed').length;
-
   return (
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">My Tasks</h1>
-          <p className="text-muted-foreground text-sm">
-            {pending} pending · {inProgress} in progress · {completed} completed
-          </p>
+          <p className="text-muted-foreground text-sm">{filtered.length} of {myTasks.length} tasks</p>
         </div>
         <Button onClick={() => { setEditing(null); setDialogOpen(true); }} className="gap-2">
           <Plus className="w-4 h-4" /> Add Task
@@ -165,8 +165,16 @@ export default function MyTasks() {
           <Input className="pl-9" placeholder="Search your tasks..." value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-48"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-44"><SelectValue /></SelectTrigger>
           <SelectContent>{STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+        </Select>
+        <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+          <SelectTrigger className="w-full sm:w-36"><SelectValue /></SelectTrigger>
+          <SelectContent>{PRIORITIES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+        </Select>
+        <Select value={serviceFilter} onValueChange={setServiceFilter}>
+          <SelectTrigger className="w-full sm:w-48"><SelectValue /></SelectTrigger>
+          <SelectContent>{SERVICE_TYPES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
         </Select>
       </div>
 
