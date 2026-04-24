@@ -6,12 +6,15 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Plus, Search, Pencil, Trash2, User, Phone, Mail, Building2 } from 'lucide-react';
 import ClientFormDialog from '@/components/travel/ClientFormDialog';
+import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
 import { Badge } from '@/components/ui/badge';
 
 export default function TravelClients() {
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const qc = useQueryClient();
 
   const { data: clients = [], isLoading } = useQuery({
@@ -98,7 +101,7 @@ export default function TravelClients() {
                   <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setEditing(client); setDialogOpen(true); }}>
                     <Pencil className="w-3 h-3" />
                   </Button>
-                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => deleteMut.mutate(client.id)}>
+                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => { setDeleteTarget(client.id); setDeleteConfirmOpen(true); }}>
                     <Trash2 className="w-3 h-3" />
                   </Button>
                 </div>
@@ -144,6 +147,19 @@ export default function TravelClients() {
         onOpenChange={setDialogOpen}
         client={editing}
         onSave={handleSave}
+      />
+
+      <DeleteConfirmationDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title="Delete Client"
+        description="Are you sure you want to delete this client? This action cannot be undone."
+        onConfirm={() => {
+          deleteMut.mutate(deleteTarget);
+          setDeleteConfirmOpen(false);
+          setDeleteTarget(null);
+        }}
+        isLoading={deleteMut.isPending}
       />
     </div>
   );

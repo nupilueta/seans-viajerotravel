@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2, GripVertical, Settings2, Activity } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import DailyActivityLog from '@/components/travel/DailyActivityLog';
+import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
 
 const CATEGORIES = [
   { key: 'staff', label: 'Staff Names' },
@@ -25,6 +26,8 @@ export default function Settings() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('settings');
   const [newValues, setNewValues] = useState({});
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const { data: settings = [] } = useQuery({
     queryKey: ['taskSettings'],
@@ -109,7 +112,7 @@ export default function Settings() {
                         size="icon"
                         variant="ghost"
                         className="h-6 w-6 opacity-0 group-hover:opacity-100 text-destructive shrink-0"
-                        onClick={() => deleteMutation.mutate(item.id)}
+                        onClick={() => { setDeleteTarget(item.id); setDeleteConfirmOpen(true); }}
                       >
                         <Trash2 className="w-3 h-3" />
                       </Button>
@@ -137,6 +140,19 @@ export default function Settings() {
 
       {/* Daily Activity Tab */}
       {activeTab === 'activity' && <DailyActivityLog />}
+
+      <DeleteConfirmationDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title="Delete Setting"
+        description="Are you sure you want to delete this option? This action cannot be undone."
+        onConfirm={() => {
+          deleteMutation.mutate(deleteTarget);
+          setDeleteConfirmOpen(false);
+          setDeleteTarget(null);
+        }}
+        isLoading={deleteMutation.isPending}
+      />
     </div>
   );
 }

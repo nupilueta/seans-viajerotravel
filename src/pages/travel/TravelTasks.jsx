@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Search } from 'lucide-react';
 import TravelTaskFormDialog from '@/components/travel/TravelTaskFormDialog';
 import TravelTaskTable from '@/components/travel/TravelTaskTable';
+import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
 
 const STATUSES = ['All', 'Not Started', 'In Progress', 'Waiting for Client', 'Submitted', 'Completed', 'Cancelled'];
 const PRIORITIES = ['All', 'High', 'Medium', 'Low'];
@@ -19,6 +20,8 @@ export default function TravelTasks() {
   const [serviceFilter, setServiceFilter] = useState('All');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const qc = useQueryClient();
 
   const { data: tasks = [], isLoading } = useQuery({
@@ -154,7 +157,7 @@ export default function TravelTasks() {
         tasks={filtered}
         isLoading={isLoading}
         onEdit={(task) => { setEditing(task); setDialogOpen(true); }}
-        onDelete={(id) => deleteMut.mutate(id)}
+        onDelete={(id) => { setDeleteTarget(id); setDeleteConfirmOpen(true); }}
         onStatusChange={(task, status) => {
           const today = new Date().toISOString().split('T')[0];
           const staff = (task.assigned_to || '').split(',')[0].trim() || 'Admin';
@@ -171,6 +174,19 @@ export default function TravelTasks() {
         clients={clients}
         onSave={handleSave}
         isAdmin={true}
+      />
+
+      <DeleteConfirmationDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title="Delete Task"
+        description="Are you sure you want to delete this task? This action cannot be undone."
+        onConfirm={() => {
+          deleteMut.mutate(deleteTarget);
+          setDeleteConfirmOpen(false);
+          setDeleteTarget(null);
+        }}
+        isLoading={deleteMut.isPending}
       />
     </div>
   );
