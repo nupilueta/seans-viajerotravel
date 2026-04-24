@@ -64,6 +64,51 @@
     "passport_expiration": {
       "type": "string"
     },
+    "passport_link": {
+      "type": "string"
+    },
+    "discount_id_number": {
+      "type": "string"
+    },
+    "discount_id_link": {
+      "type": "string"
+    },
+    "discount_id_expiration": {
+      "type": "string"
+    },
+    "us_visa": {
+      "type": "string"
+    },
+    "us_visa_expiration": {
+      "type": "string"
+    },
+    "tec_number": {
+      "type": "string"
+    },
+    "tec_link": {
+      "type": "string"
+    },
+    "mabuhay_miles": {
+      "type": "string"
+    },
+    "emirates_id": {
+      "type": "string"
+    },
+    "etihad": {
+      "type": "string"
+    },
+    "korean_air_skypass": {
+      "type": "string"
+    },
+    "singapore_ana_mileage": {
+      "type": "string"
+    },
+    "cathay_pacific_asia_miles": {
+      "type": "string"
+    },
+    "facebook_link": {
+      "type": "string"
+    },
     "travel_type": {
       "type": "string",
       "enum": [
@@ -109,6 +154,9 @@
       "type": "string"
     },
     "consent": {
+      "type": "string"
+    },
+    "no_of_flights": {
       "type": "string"
     }
   },

@@ -11,15 +11,22 @@ const DEFAULTS = {
   code: '', title: '', first_name: '', middle_name: '', last_name: '', full_name: '',
   sex: '', birthday: '', mobile: '', email: '', address: '', city: '', country: '',
   company: '', department: '', position: '',
-  passport_number: '', passport_expiration: '',
+  passport_number: '', passport_expiration: '', passport_link: '',
+  discount_id_number: '', discount_id_link: '', discount_id_expiration: '',
+  us_visa: '', us_visa_expiration: '',
+  tec_number: '', tec_link: '',
+  mabuhay_miles: '', emirates_id: '', etihad: '',
+  korean_air_skypass: '', singapore_ana_mileage: '', cathay_pacific_asia_miles: '',
+  facebook_link: '',
   travel_type: '', preferred_destination: '', lead_source: '',
   preferred_contact: '', tags: '', notes: '',
   last_contact_date: '', next_followup_date: '', owner_staff: '', consent: '',
+  no_of_flights: '',
 };
 
 const TRAVEL_TYPES = ['Solo', 'Couple', 'Family', 'Group', 'Corporate'];
 const LEAD_SOURCES = ['Referral', 'Walk-in', 'Facebook', 'Sister/Brother'];
-const TITLES = ['Mr', 'Ms', 'Mrs', 'Miss', 'Dr', 'Atty', 'Dir', 'Comm.', 'Col', 'ED', 'DEDO'];
+const TITLES = ['Mr', 'Ms', 'Mrs', 'Miss', 'Dr', 'Atty', 'Dir', 'Comm.', 'Col', 'ED', 'DEDO', 'Chairman'];
 
 export default function ClientFormDialog({ open, onOpenChange, client, onSave }) {
   const [form, setForm] = useState(DEFAULTS);
@@ -37,19 +44,21 @@ export default function ClientFormDialog({ open, onOpenChange, client, onSave })
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{client ? 'Edit Client' : 'New Client'}</DialogTitle>
         </DialogHeader>
 
         <Tabs defaultValue="personal">
-          <TabsList className="w-full">
-            <TabsTrigger value="personal" className="flex-1">Personal</TabsTrigger>
-            <TabsTrigger value="travel" className="flex-1">Travel</TabsTrigger>
-            <TabsTrigger value="contact" className="flex-1">Contact</TabsTrigger>
-            <TabsTrigger value="work" className="flex-1">Work</TabsTrigger>
+          <TabsList className="w-full grid grid-cols-5">
+            <TabsTrigger value="personal">Personal</TabsTrigger>
+            <TabsTrigger value="travel">Travel</TabsTrigger>
+            <TabsTrigger value="loyalty">Loyalty</TabsTrigger>
+            <TabsTrigger value="contact">Contact</TabsTrigger>
+            <TabsTrigger value="work">Work</TabsTrigger>
           </TabsList>
 
+          {/* PERSONAL TAB */}
           <TabsContent value="personal" className="space-y-3 mt-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -104,8 +113,47 @@ export default function ClientFormDialog({ open, onOpenChange, client, onSave })
                 <Input value={form.passport_expiration} onChange={e => set('passport_expiration', e.target.value)} placeholder="e.g. 2027-10-19" />
               </div>
             </div>
+            <div>
+              <Label>Passport Link</Label>
+              <Input value={form.passport_link} onChange={e => set('passport_link', e.target.value)} placeholder="File name or URL" />
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <Label>Discount ID Number</Label>
+                <Input value={form.discount_id_number} onChange={e => set('discount_id_number', e.target.value)} />
+              </div>
+              <div>
+                <Label>Discount ID Expiration</Label>
+                <Input value={form.discount_id_expiration} onChange={e => set('discount_id_expiration', e.target.value)} placeholder="e.g. 2027-01-01" />
+              </div>
+              <div>
+                <Label>Discount ID Link</Label>
+                <Input value={form.discount_id_link} onChange={e => set('discount_id_link', e.target.value)} placeholder="File name or URL" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>US Visa</Label>
+                <Input value={form.us_visa} onChange={e => set('us_visa', e.target.value)} />
+              </div>
+              <div>
+                <Label>US Visa Expiration</Label>
+                <Input value={form.us_visa_expiration} onChange={e => set('us_visa_expiration', e.target.value)} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>TEC No.</Label>
+                <Input value={form.tec_number} onChange={e => set('tec_number', e.target.value)} />
+              </div>
+              <div>
+                <Label>TEC Link</Label>
+                <Input value={form.tec_link} onChange={e => set('tec_link', e.target.value)} />
+              </div>
+            </div>
           </TabsContent>
 
+          {/* TRAVEL TAB */}
           <TabsContent value="travel" className="space-y-3 mt-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -135,6 +183,22 @@ export default function ClientFormDialog({ open, onOpenChange, client, onSave })
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
+                <Label>No. of Flights (Per Way)</Label>
+                <Input value={form.no_of_flights} onChange={e => set('no_of_flights', e.target.value)} />
+              </div>
+              <div>
+                <Label>Consent (Y/N)</Label>
+                <Select value={form.consent || ''} onValueChange={v => set('consent', v)}>
+                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Y">Yes</SelectItem>
+                    <SelectItem value="N">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
                 <Label>Last Contact Date</Label>
                 <Input type="date" value={form.last_contact_date || ''} onChange={e => set('last_contact_date', e.target.value)} />
               </div>
@@ -149,6 +213,35 @@ export default function ClientFormDialog({ open, onOpenChange, client, onSave })
             </div>
           </TabsContent>
 
+          {/* LOYALTY TAB */}
+          <TabsContent value="loyalty" className="space-y-3 mt-4">
+            <div>
+              <Label>Mabuhay Miles</Label>
+              <Input value={form.mabuhay_miles} onChange={e => set('mabuhay_miles', e.target.value)} />
+            </div>
+            <div>
+              <Label>Emirates ID</Label>
+              <Input value={form.emirates_id} onChange={e => set('emirates_id', e.target.value)} />
+            </div>
+            <div>
+              <Label>Etihad</Label>
+              <Input value={form.etihad} onChange={e => set('etihad', e.target.value)} />
+            </div>
+            <div>
+              <Label>Korean Air Skypass</Label>
+              <Input value={form.korean_air_skypass} onChange={e => set('korean_air_skypass', e.target.value)} />
+            </div>
+            <div>
+              <Label>Singapore Airlines / ANA Mileage Club (Star Alliance)</Label>
+              <Input value={form.singapore_ana_mileage} onChange={e => set('singapore_ana_mileage', e.target.value)} />
+            </div>
+            <div>
+              <Label>Cathay Pacific / Asia Miles No.</Label>
+              <Input value={form.cathay_pacific_asia_miles} onChange={e => set('cathay_pacific_asia_miles', e.target.value)} />
+            </div>
+          </TabsContent>
+
+          {/* CONTACT TAB */}
           <TabsContent value="contact" className="space-y-3 mt-4">
             <div>
               <Label>Mobile / WhatsApp</Label>
@@ -176,8 +269,13 @@ export default function ClientFormDialog({ open, onOpenChange, client, onSave })
               <Label>Preferred Contact</Label>
               <Input value={form.preferred_contact} onChange={e => set('preferred_contact', e.target.value)} placeholder="e.g. Messenger, Viber" />
             </div>
+            <div>
+              <Label>Facebook Link</Label>
+              <Input value={form.facebook_link} onChange={e => set('facebook_link', e.target.value)} />
+            </div>
           </TabsContent>
 
+          {/* WORK TAB */}
           <TabsContent value="work" className="space-y-3 mt-4">
             <div>
               <Label>Company</Label>
@@ -191,21 +289,9 @@ export default function ClientFormDialog({ open, onOpenChange, client, onSave })
               <Label>Position</Label>
               <Input value={form.position} onChange={e => set('position', e.target.value)} />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Owner / Staff</Label>
-                <Input value={form.owner_staff} onChange={e => set('owner_staff', e.target.value)} />
-              </div>
-              <div>
-                <Label>Consent (Y/N)</Label>
-                <Select value={form.consent || ''} onValueChange={v => set('consent', v)}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Y">Yes</SelectItem>
-                    <SelectItem value="N">No</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div>
+              <Label>Owner / Head / Staff</Label>
+              <Input value={form.owner_staff} onChange={e => set('owner_staff', e.target.value)} />
             </div>
           </TabsContent>
         </Tabs>

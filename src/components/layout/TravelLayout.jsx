@@ -12,6 +12,7 @@ const adminNav = [
 ];
 
 const employeeNav = [
+  { label: 'Clients', path: '/travel/clients', icon: Users },
   { label: 'My Tasks', path: '/travel/my-tasks', icon: ClipboardList },
 ];
 
