@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search } from 'lucide-react';
 import TravelTaskTable from '@/components/travel/TravelTaskTable';
 import TravelTaskFormDialog from '@/components/travel/TravelTaskFormDialog';
+import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
@@ -18,6 +19,8 @@ export default function MyTasks() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const qc = useQueryClient();
 
   const { data: staffSettings = [] } = useQuery({
@@ -52,6 +55,11 @@ export default function MyTasks() {
 
   const createMut = useMutation({
     mutationFn: data => base44.entities.TravelTask.create(data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['travel-tasks'] }),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: id => base44.entities.TravelTask.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['travel-tasks'] }),
   });
 
@@ -165,7 +173,7 @@ export default function MyTasks() {
         tasks={filtered}
         isLoading={isLoading}
         onEdit={(task) => { setEditing(task); setDialogOpen(true); }}
-        onDelete={null}
+        onDelete={(id) => { setDeleteTarget(id); setDeleteConfirmOpen(true); }}
         onStatusChange={(task, status) => {
           const today = new Date().toISOString().split('T')[0];
           const staff = staffName || (task.assigned_to || '').split(',')[0].trim() || 'Staff';
@@ -182,6 +190,19 @@ export default function MyTasks() {
         clients={clients}
         onSave={handleSave}
         isAdmin={true}
+      />
+
+      <DeleteConfirmationDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title="Delete Task"
+        description="Are you sure you want to delete this task? This action cannot be undone."
+        onConfirm={() => {
+          deleteMut.mutate(deleteTarget);
+          setDeleteConfirmOpen(false);
+          setDeleteTarget(null);
+        }}
+        isLoading={deleteMut.isPending}
       />
     </div>
   );
