@@ -114,7 +114,7 @@ export default function DailyActivityLog() {
                 {filtered.map(a => (
                   <tr key={a.id} className="hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
-                      {a.created_date ? format(new Date(a.created_date), 'h:mm a') : '—'}
+                      {a.created_date ? new Date(a.created_date).toLocaleTimeString('en-PH', { timeZone: 'Asia/Manila', hour: 'numeric', minute: '2-digit', hour12: true }) : '—'}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5">
