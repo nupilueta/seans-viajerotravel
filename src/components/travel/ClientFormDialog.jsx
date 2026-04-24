@@ -53,7 +53,7 @@ export default function ClientFormDialog({ open, onOpenChange, client, onSave })
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const handleSave = () => {
-    const fullName = form.full_name || [form.title, form.first_name, form.middle_name, form.last_name].filter(Boolean).join(' ');
+    const fullName = [form.title, form.first_name, form.middle_name, form.last_name].filter(Boolean).join(' ');
     onSave({ ...form, full_name: fullName });
   };
 
