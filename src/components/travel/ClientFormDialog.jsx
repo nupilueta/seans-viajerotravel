@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,7 +33,21 @@ export default function ClientFormDialog({ open, onOpenChange, client, onSave })
   const [form, setForm] = useState(DEFAULTS);
 
   useEffect(() => {
-    if (open) setForm(client ? { ...DEFAULTS, ...client } : DEFAULTS);
+    if (!open) return;
+    if (client) {
+      setForm({ ...DEFAULTS, ...client });
+    } else {
+      // Auto-generate next client code
+      base44.entities.TravelClient.list('code', 500).then(clients => {
+        const codes = clients
+          .map(c => c.code)
+          .filter(c => /^CL-\d+$/.test(c))
+          .map(c => parseInt(c.replace('CL-', ''), 10));
+        const nextNum = codes.length > 0 ? Math.max(...codes) + 1 : 1;
+        const nextCode = `CL-${String(nextNum).padStart(4, '0')}`;
+        setForm({ ...DEFAULTS, code: nextCode });
+      });
+    }
   }, [open, client]);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));

@@ -42,14 +42,26 @@ export default function TravelTaskFormDialog({ open, onOpenChange, task, clients
   const PAYMENT_STATUSES = getOptions('payment_status', DEFAULT_PAYMENT_STATUSES);
 
   useEffect(() => {
-    if (open) {
-      setForm(task ? {
+    if (!open) return;
+    if (task) {
+      setForm({
         ...DEFAULTS,
         ...task,
         quoted_amount: task.quoted_amount || '',
         paid_amount: task.paid_amount || '',
         balance: task.balance || '',
-      } : DEFAULTS);
+      });
+    } else {
+      // Auto-generate next task ID
+      base44.entities.TravelTask.list('task_id', 500).then(tasks => {
+        const codes = tasks
+          .map(t => t.task_id)
+          .filter(c => /^T-\d+$/.test(c))
+          .map(c => parseInt(c.replace('T-', ''), 10));
+        const nextNum = codes.length > 0 ? Math.max(...codes) + 1 : 1;
+        const nextId = `T-${String(nextNum).padStart(4, '0')}`;
+        setForm({ ...DEFAULTS, task_id: nextId });
+      });
     }
   }, [open, task]);
 
