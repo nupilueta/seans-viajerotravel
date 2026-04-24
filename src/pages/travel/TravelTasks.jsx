@@ -112,12 +112,13 @@ export default function TravelTasks() {
   };
 
   const handleSave = (form) => {
+    const { id, created_date, updated_date, created_by, entity_name, app_id, ...cleanForm } = form;
     if (editing) {
       logActivity('updated', form, editing);
-      updateMut.mutate({ id: editing.id, data: form });
+      updateMut.mutate({ id: editing.id, data: cleanForm });
     } else {
-      createMut.mutate(form, {
-        onSuccess: (created) => logActivity('created', { ...form, id: created?.id }),
+      createMut.mutate(cleanForm, {
+        onSuccess: (created) => logActivity('created', { ...cleanForm, id: created?.id }),
       });
     }
     setDialogOpen(false);

@@ -128,8 +128,9 @@ export default function MyTasks() {
   };
 
   const handleSave = (form) => {
+    const { id, created_date, updated_date, created_by, entity_name, app_id, ...cleanForm } = form;
     // On create, always assign to current employee; on edit, keep existing assignment
-    const data = { ...form, assigned_to: editing ? (form.assigned_to || staffName) : staffName };
+    const data = { ...cleanForm, assigned_to: editing ? (cleanForm.assigned_to || staffName) : staffName };
     if (editing) {
       logActivity('updated', data, editing);
       updateMut.mutate({ id: editing.id, data });
