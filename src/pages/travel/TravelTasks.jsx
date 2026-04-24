@@ -39,10 +39,7 @@ export default function TravelTasks() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['travel-tasks'] }),
   });
   const updateMut = useMutation({
-    mutationFn: ({ id, data }) => {
-      const { id: _id, ...cleanData } = data;
-      return base44.entities.TravelTask.update(id, cleanData);
-    },
+    mutationFn: ({ id, data }) => base44.entities.TravelTask.update(id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['travel-tasks'] }),
   });
   const deleteMut = useMutation({
@@ -112,13 +109,13 @@ export default function TravelTasks() {
   };
 
   const handleSave = (form) => {
-    const { id, created_date, updated_date, created_by, entity_name, app_id, ...cleanForm } = form;
+    const { id, ...payload } = form;
     if (editing) {
       logActivity('updated', form, editing);
-      updateMut.mutate({ id: editing.id, data: cleanForm });
+      updateMut.mutate({ id: editing.id, data: payload });
     } else {
-      createMut.mutate(cleanForm, {
-        onSuccess: (created) => logActivity('created', { ...cleanForm, id: created?.id }),
+      createMut.mutate(payload, {
+        onSuccess: (created) => logActivity('created', { ...payload, id: created?.id }),
       });
     }
     setDialogOpen(false);

@@ -49,10 +49,7 @@ export default function MyTasks() {
   });
 
   const updateMut = useMutation({
-    mutationFn: ({ id, data }) => {
-      const { id: _id, ...cleanData } = data;
-      return base44.entities.TravelTask.update(id, cleanData);
-    },
+    mutationFn: ({ id, data }) => base44.entities.TravelTask.update(id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['travel-tasks'] }),
   });
 
@@ -128,9 +125,8 @@ export default function MyTasks() {
   };
 
   const handleSave = (form) => {
-    const { id, created_date, updated_date, created_by, entity_name, app_id, ...cleanForm } = form;
-    // On create, always assign to current employee; on edit, keep existing assignment
-    const data = { ...cleanForm, assigned_to: editing ? (cleanForm.assigned_to || staffName) : staffName };
+    const { id, ...payload } = form;
+    const data = { ...payload, assigned_to: editing ? (payload.assigned_to || staffName) : staffName };
     if (editing) {
       logActivity('updated', data, editing);
       updateMut.mutate({ id: editing.id, data });

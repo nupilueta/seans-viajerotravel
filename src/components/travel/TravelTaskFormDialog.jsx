@@ -107,15 +107,18 @@ export default function TravelTaskFormDialog({ open, onOpenChange, task, clients
     : null;
 
   const handleSave = () => {
-    const { id, ...formData } = form;
-    onSave({
+    const { id, created_date, updated_date, created_by, entity_name, app_id, ...formData } = form;
+    const payload = {
       ...formData,
-      ...(task ? { id } : {}), // only include id when editing
-      quoted_amount: formData.quoted_amount ? Number(formData.quoted_amount) : undefined,
-      paid_amount: formData.paid_amount ? Number(formData.paid_amount) : undefined,
-      balance: formData.balance ? Number(formData.balance) : undefined,
+      quoted_amount: formData.quoted_amount !== '' && formData.quoted_amount != null ? Number(formData.quoted_amount) : undefined,
+      paid_amount: formData.paid_amount !== '' && formData.paid_amount != null ? Number(formData.paid_amount) : undefined,
+      balance: formData.balance !== '' && formData.balance != null ? Number(formData.balance) : undefined,
       progress: Number(formData.progress) || 0,
-    });
+    };
+    if (task) {
+      payload.id = id;
+    }
+    onSave(payload);
   };
 
   return (
