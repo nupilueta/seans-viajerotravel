@@ -14,6 +14,7 @@ export default function TravelClients() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('code'); // 'code' or 'last_name'
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -38,15 +39,22 @@ export default function TravelClients() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['travel-clients'] }),
   });
 
-  const filtered = clients.filter(c => {
-    const q = search.toLowerCase();
-    return (
-      (c.full_name || '').toLowerCase().includes(q) ||
-      (c.code || '').toLowerCase().includes(q) ||
-      (c.email || '').toLowerCase().includes(q) ||
-      (c.company || '').toLowerCase().includes(q)
-    );
-  });
+  const filtered = clients
+    .filter(c => {
+      const q = search.toLowerCase();
+      return (
+        (c.full_name || '').toLowerCase().includes(q) ||
+        (c.code || '').toLowerCase().includes(q) ||
+        (c.email || '').toLowerCase().includes(q) ||
+        (c.company || '').toLowerCase().includes(q)
+      );
+    })
+    .sort((a, b) => {
+      if (sortBy === 'last_name') {
+        return (a.last_name || '').localeCompare(b.last_name || '');
+      }
+      return (a.code || '').localeCompare(b.code || '', undefined, { numeric: true });
+    });
 
   const handleSave = (form) => {
     if (editing) {
@@ -70,14 +78,32 @@ export default function TravelClients() {
         </Button>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          className="pl-9"
-          placeholder="Search by name, code, email, company..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            className="pl-9"
+            placeholder="Search by name, code, email, company..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant={sortBy === 'code' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSortBy('code')}
+          >
+            Sort by CL No.
+          </Button>
+          <Button
+            variant={sortBy === 'last_name' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSortBy('last_name')}
+          >
+            Sort by Last Name
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
