@@ -53,16 +53,17 @@ export default function TravelTaskFormDialog({ open, onOpenChange, task, clients
       setForm({
         ...DEFAULTS,
         ...task,
-        quoted_amount: task.quoted_amount || '',
-        paid_amount: task.paid_amount || '',
-        balance: task.balance || '',
+        id: task.id, // always preserve the real database ID
+        quoted_amount: task.quoted_amount ?? '',
+        paid_amount: task.paid_amount ?? '',
+        balance: task.balance ?? '',
       });
       setClientSearch(task.client_name || '');
     } else {
       setClientSearch('');
       // Auto-generate next task ID
-      base44.entities.TravelTask.list('task_id', 500).then(tasks => {
-        const codes = tasks
+      base44.entities.TravelTask.list('task_id', 500).then(allTasks => {
+        const codes = allTasks
           .map(t => t.task_id)
           .filter(c => /^T-\d+$/.test(c))
           .map(c => parseInt(c.replace('T-', ''), 10));
@@ -71,7 +72,7 @@ export default function TravelTaskFormDialog({ open, onOpenChange, task, clients
         setForm({ ...DEFAULTS, task_id: nextId });
       });
     }
-  }, [open, task]);
+  }, [open, task?.id]);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
