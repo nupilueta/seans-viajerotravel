@@ -172,6 +172,7 @@ export default function TravelTasks() {
         onOpenChange={setDialogOpen}
         task={editing}
         clients={clients}
+        tasks={tasks}
         onSave={handleSave}
         isAdmin={true}
       />

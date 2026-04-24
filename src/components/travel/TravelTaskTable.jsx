@@ -54,6 +54,7 @@ export default function TravelTaskTable({ tasks, isLoading, onEdit, onDelete, on
               <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Service</th>
               <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Description</th>
               <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Assigned To</th>
+              <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Start Date</th>
               <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Due Date</th>
               <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Status</th>
               <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground">Priority</th>
@@ -78,6 +79,7 @@ export default function TravelTaskTable({ tasks, isLoading, onEdit, onDelete, on
                   <p className="text-xs max-w-[200px] line-clamp-2 leading-relaxed">{task.description}</p>
                 </td>
                 <td className="px-4 py-3 text-xs">{task.assigned_to || '—'}</td>
+                <td className="px-4 py-3 text-xs whitespace-nowrap">{safeDate(task.start_date)}</td>
                 <td className="px-4 py-3 text-xs whitespace-nowrap">{safeDate(task.due_date)}</td>
                 <td className="px-4 py-3">
                   <DropdownMenu>

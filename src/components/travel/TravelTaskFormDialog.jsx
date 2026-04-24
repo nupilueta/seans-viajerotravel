@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertTriangle } from 'lucide-react';
 
 const DEFAULTS = {
   task_id: '', client_id: '', client_name: '', client_contact: '',
@@ -22,8 +23,10 @@ const DEFAULT_PRIORITIES = ['High', 'Medium', 'Low'];
 const DEFAULT_SERVICE_TYPES = ['Visa Processing', 'Airline Ticket', 'Tour Package', 'Hotel Booking', 'Travel Insurance', 'Receipt', 'Credit Card Payment', 'Other'];
 const DEFAULT_PAYMENT_STATUSES = ['Unpaid', 'Partial', 'Paid', 'With Balance', 'Accounts Receivable', 'Not Applicable'];
 
-export default function TravelTaskFormDialog({ open, onOpenChange, task, clients = [], onSave, isAdmin }) {
+export default function TravelTaskFormDialog({ open, onOpenChange, task, clients = [], tasks = [], onSave, isAdmin }) {
   const [form, setForm] = useState(DEFAULTS);
+  const [clientSearch, setClientSearch] = useState('');
+  const [showClientDropdown, setShowClientDropdown] = useState(false);
 
   const { data: allSettings = [] } = useQuery({
     queryKey: ['taskSettings'],
@@ -51,7 +54,9 @@ export default function TravelTaskFormDialog({ open, onOpenChange, task, clients
         paid_amount: task.paid_amount || '',
         balance: task.balance || '',
       });
+      setClientSearch(task.client_name || '');
     } else {
+      setClientSearch('');
       // Auto-generate next task ID
       base44.entities.TravelTask.list('task_id', 500).then(tasks => {
         const codes = tasks
@@ -67,11 +72,34 @@ export default function TravelTaskFormDialog({ open, onOpenChange, task, clients
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
-  const handleClientChange = (clientId) => {
-    const client = clients.find(c => c.code === clientId || c.id === clientId);
-    set('client_id', clientId);
-    if (client) set('client_name', client.full_name || `${client.first_name} ${client.last_name}`);
+  const handleClientSelect = (client) => {
+    setForm(f => ({
+      ...f,
+      client_id: client.code || client.id,
+      client_name: client.full_name || `${client.first_name} ${client.last_name}`,
+    }));
+    setClientSearch(client.full_name || `${client.first_name} ${client.last_name}`);
+    setShowClientDropdown(false);
   };
+
+  const filteredClients = clientSearch.length > 0
+    ? clients.filter(c => {
+        const q = clientSearch.toLowerCase();
+        return (c.full_name || '').toLowerCase().includes(q) ||
+               (c.code || '').toLowerCase().includes(q) ||
+               (c.first_name || '').toLowerCase().includes(q) ||
+               (c.last_name || '').toLowerCase().includes(q);
+      }).slice(0, 10)
+    : [];
+
+  // Duplicate detection: same client_id AND same description (trimmed, case-insensitive)
+  const duplicateTask = form.client_id && form.description
+    ? tasks.find(t =>
+        t.id !== task?.id &&
+        t.client_id === form.client_id &&
+        (t.description || '').trim().toLowerCase() === (form.description || '').trim().toLowerCase()
+      )
+    : null;
 
   const handleSave = () => {
     onSave({
@@ -91,35 +119,48 @@ export default function TravelTaskFormDialog({ open, onOpenChange, task, clients
         </DialogHeader>
 
         <div className="grid gap-4 py-2">
-          {/* Task ID & Client */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>Task ID</Label>
-              <Input value={form.task_id} onChange={e => set('task_id', e.target.value)} placeholder="T-0001" />
-            </div>
-            <div>
-              <Label>Client</Label>
-              {clients.length > 0 ? (
-                <Select value={form.client_id} onValueChange={handleClientChange}>
-                  <SelectTrigger><SelectValue placeholder="Select client" /></SelectTrigger>
-                  <SelectContent>
-                    {clients.map(c => (
-                      <SelectItem key={c.id} value={c.code || c.id}>
-                        {c.code} - {c.full_name || `${c.first_name} ${c.last_name}`}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <Input value={form.client_id} onChange={e => set('client_id', e.target.value)} placeholder="Client ID" />
-              )}
-            </div>
+          {/* Task ID */}
+          <div>
+            <Label>Task ID</Label>
+            <Input value={form.task_id} onChange={e => set('task_id', e.target.value)} placeholder="T-0001" />
           </div>
 
+          {/* Client search */}
           <div>
-            <Label>Client Name</Label>
-            <Input value={form.client_name} onChange={e => set('client_name', e.target.value)} placeholder="Client full name" />
+            <Label>Client</Label>
+            <div className="relative">
+              <Input
+                value={clientSearch}
+                onChange={e => { setClientSearch(e.target.value); setShowClientDropdown(true); set('client_id', ''); set('client_name', e.target.value); }}
+                onFocus={() => setShowClientDropdown(true)}
+                placeholder="Search by name or code..."
+              />
+              {showClientDropdown && filteredClients.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                  {filteredClients.map(c => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-accent flex gap-2"
+                      onMouseDown={() => handleClientSelect(c)}
+                    >
+                      <span className="font-mono text-xs text-muted-foreground">{c.code}</span>
+                      <span>{c.full_name || `${c.first_name} ${c.last_name}`}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {form.client_id && <p className="text-xs text-muted-foreground mt-1">ID: {form.client_id}</p>}
           </div>
+
+          {/* Duplicate warning */}
+          {duplicateTask && (
+            <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2 text-amber-600 text-xs">
+              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>Possible duplicate: <strong>{duplicateTask.task_id}</strong> has the same client and description.</span>
+            </div>
+          )}
 
           {/* Service & Description */}
           <div>
@@ -140,16 +181,12 @@ export default function TravelTaskFormDialog({ open, onOpenChange, task, clients
           {/* Assignment */}
           <div>
             <Label>Assigned To</Label>
-            {isAdmin ? (
-              <Input value={form.assigned_to} onChange={e => set('assigned_to', e.target.value)} placeholder="Staff name(s) separated by comma" />
-            ) : (
-              <Select value={form.assigned_to} onValueChange={v => set('assigned_to', v)}>
-                <SelectTrigger><SelectValue placeholder="Select staff" /></SelectTrigger>
-                <SelectContent>
-                  {STAFF.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            )}
+            <Select value={form.assigned_to} onValueChange={v => set('assigned_to', v)}>
+              <SelectTrigger><SelectValue placeholder="Select staff" /></SelectTrigger>
+              <SelectContent>
+                {STAFF.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Dates */}
