@@ -39,7 +39,10 @@ export default function TravelTasks() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['travel-tasks'] }),
   });
   const updateMut = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.TravelTask.update(id, data),
+    mutationFn: ({ id, data }) => {
+      const { id: _id, ...cleanData } = data;
+      return base44.entities.TravelTask.update(id, cleanData);
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['travel-tasks'] }),
   });
   const deleteMut = useMutation({
