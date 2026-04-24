@@ -7,7 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, CalendarIcon } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format, parseISO } from 'date-fns';
 
 const DEFAULTS = {
   task_id: '', client_id: '', client_name: '', client_contact: '',
@@ -193,11 +196,41 @@ export default function TravelTaskFormDialog({ open, onOpenChange, task, clients
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Start Date</Label>
-              <Input type="date" value={form.start_date || ''} onChange={e => set('start_date', e.target.value)} />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-start text-left font-normal">
+                    <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                    {form.start_date ? format(parseISO(form.start_date), 'MMM d, yyyy') : <span className="text-muted-foreground">Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={form.start_date ? parseISO(form.start_date) : undefined}
+                    onSelect={d => set('start_date', d ? format(d, 'yyyy-MM-dd') : '')}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div>
               <Label>Due Date</Label>
-              <Input type="date" value={form.due_date || ''} onChange={e => set('due_date', e.target.value)} />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-start text-left font-normal">
+                    <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                    {form.due_date ? format(parseISO(form.due_date), 'MMM d, yyyy') : <span className="text-muted-foreground">Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={form.due_date ? parseISO(form.due_date) : undefined}
+                    onSelect={d => set('due_date', d ? format(d, 'yyyy-MM-dd') : '')}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 
