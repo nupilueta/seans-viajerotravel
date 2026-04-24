@@ -65,11 +65,9 @@ export default function TravelClients() {
           <h1 className="text-2xl font-bold">Clients</h1>
           <p className="text-muted-foreground text-sm">{clients.length} total clients</p>
         </div>
-        {isAdmin && (
-          <Button onClick={() => { setEditing(null); setDialogOpen(true); }} className="gap-2">
-            <Plus className="w-4 h-4" /> Add Client
-          </Button>
-        )}
+        <Button onClick={() => { setEditing(null); setDialogOpen(true); }} className="gap-2">
+          <Plus className="w-4 h-4" /> Add Client
+        </Button>
       </div>
 
       <div className="relative">
@@ -102,16 +100,14 @@ export default function TravelClients() {
                     <p className="text-xs text-muted-foreground">{client.code}</p>
                   </div>
                 </div>
-                {isAdmin && (
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setEditing(client); setDialogOpen(true); }}>
-                      <Pencil className="w-3 h-3" />
-                    </Button>
-                    <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => { setDeleteTarget(client.id); setDeleteConfirmOpen(true); }}>
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
-                )}
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setEditing(client); setDialogOpen(true); }}>
+                    <Pencil className="w-3 h-3" />
+                  </Button>
+                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => { setDeleteTarget(client.id); setDeleteConfirmOpen(true); }}>
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
               </div>
 
               <div className="space-y-1.5 text-xs text-muted-foreground">
@@ -149,14 +145,12 @@ export default function TravelClients() {
         </div>
       )}
 
-      {isAdmin && (
-        <ClientFormDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          client={editing}
-          onSave={handleSave}
-        />
-      )}
+      <ClientFormDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        client={editing}
+        onSave={handleSave}
+      />
 
       <DeleteConfirmationDialog
         open={deleteConfirmOpen}
