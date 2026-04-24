@@ -22,7 +22,7 @@ export default function TravelClients() {
 
   const { data: clients = [], isLoading } = useQuery({
     queryKey: ['travel-clients'],
-    queryFn: () => base44.entities.TravelClient.list('-created_date', 200),
+    queryFn: () => base44.entities.TravelClient.list('code', 500),
   });
 
   const createMut = useMutation({
