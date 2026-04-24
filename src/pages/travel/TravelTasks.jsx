@@ -36,7 +36,10 @@ export default function TravelTasks() {
 
   const createMut = useMutation({
     mutationFn: data => base44.entities.TravelTask.create(data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['travel-tasks'] }),
+    onSuccess: (created, variables) => {
+      qc.invalidateQueries({ queryKey: ['travel-tasks'] });
+      logActivity('created', { ...variables, id: created?.id });
+    },
   });
   const updateMut = useMutation({
     mutationFn: ({ id, data }) => base44.entities.TravelTask.update(id, data),
@@ -114,9 +117,7 @@ export default function TravelTasks() {
       logActivity('updated', form, editing);
       updateMut.mutate({ id: editing.id, data: payload });
     } else {
-      createMut.mutate(payload, {
-        onSuccess: (created) => logActivity('created', { ...payload, id: created?.id }),
-      });
+      createMut.mutate(payload);
     }
     setDialogOpen(false);
     setEditing(null);
