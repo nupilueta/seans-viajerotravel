@@ -7,6 +7,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { CalendarIcon } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
 
 const DEFAULTS = {
   code: '', title: '', first_name: '', middle_name: '', last_name: '', full_name: '',
@@ -115,7 +119,25 @@ export default function ClientFormDialog({ open, onOpenChange, client, onSave })
               </div>
               <div>
                 <Label>Birthday</Label>
-                <Input type="date" value={form.birthday || ''} onChange={e => set('birthday', e.target.value)} />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start text-left font-normal">
+                      <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                      {form.birthday ? format(parseISO(form.birthday), 'MMM d, yyyy') : <span className="text-muted-foreground">Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={form.birthday ? parseISO(form.birthday) : undefined}
+                      onSelect={d => set('birthday', d ? format(d, 'yyyy-MM-dd') : '')}
+                      captionLayout="dropdown"
+                      fromYear={1920}
+                      toYear={new Date().getFullYear()}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -282,7 +304,16 @@ export default function ClientFormDialog({ open, onOpenChange, client, onSave })
             </div>
             <div>
               <Label>Preferred Contact</Label>
-              <Input value={form.preferred_contact} onChange={e => set('preferred_contact', e.target.value)} placeholder="e.g. Messenger, Viber" />
+              <Select value={form.preferred_contact || ''} onValueChange={v => set('preferred_contact', v)}>
+                <SelectTrigger><SelectValue placeholder="Select preferred contact" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Call">Call</SelectItem>
+                  <SelectItem value="Messenger">Messenger</SelectItem>
+                  <SelectItem value="Text">Text</SelectItem>
+                  <SelectItem value="Viber">Viber</SelectItem>
+                  <SelectItem value="WhatsApp">WhatsApp</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label>Facebook Link</Label>
