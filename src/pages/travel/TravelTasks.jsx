@@ -4,10 +4,11 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Download } from 'lucide-react';
 import TravelTaskFormDialog from '@/components/travel/TravelTaskFormDialog';
 import TravelTaskTable from '@/components/travel/TravelTaskTable';
 import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
+import ExportTasksDialog from '@/components/travel/ExportTasksDialog';
 
 const STATUSES = ['All', 'Not Started', 'In Progress', 'Waiting for Client', 'Submitted', 'Completed', 'Cancelled'];
 const PRIORITIES = ['All', 'High', 'Medium', 'Low'];
@@ -22,6 +23,7 @@ export default function TravelTasks() {
   const [editing, setEditing] = useState(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [exportOpen, setExportOpen] = useState(false);
   const qc = useQueryClient();
 
   const { data: tasks = [], isLoading } = useQuery({
@@ -130,9 +132,14 @@ export default function TravelTasks() {
           <h1 className="text-2xl font-bold">Task Manager</h1>
           <p className="text-muted-foreground text-sm">{filtered.length} of {tasks.length} tasks</p>
         </div>
-        <Button onClick={() => { setEditing(null); setDialogOpen(true); }} className="gap-2">
-          <Plus className="w-4 h-4" /> Add Task
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setExportOpen(true)} className="gap-2">
+            <Download className="w-4 h-4" /> Export Excel
+          </Button>
+          <Button onClick={() => { setEditing(null); setDialogOpen(true); }} className="gap-2">
+            <Plus className="w-4 h-4" /> Add Task
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -177,6 +184,12 @@ export default function TravelTasks() {
         tasks={tasks}
         onSave={handleSave}
         isAdmin={true}
+      />
+
+      <ExportTasksDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        tasks={tasks}
       />
 
       <DeleteConfirmationDialog
