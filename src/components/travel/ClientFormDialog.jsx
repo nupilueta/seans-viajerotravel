@@ -140,6 +140,19 @@ export default function ClientFormDialog({ open, onOpenChange, client, onSave })
                 </Popover>
               </div>
             </div>
+            {form.birthday && (() => {
+              const today = new Date();
+              const bday = parseISO(form.birthday);
+              let age = today.getFullYear() - bday.getFullYear();
+              const m = today.getMonth() - bday.getMonth();
+              if (m < 0 || (m === 0 && today.getDate() < bday.getDate())) age--;
+              return (
+                <div>
+                  <Label>Age</Label>
+                  <Input value={`${age} years old`} readOnly className="bg-muted text-muted-foreground cursor-default" />
+                </div>
+              );
+            })()}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Passport Number</Label>
