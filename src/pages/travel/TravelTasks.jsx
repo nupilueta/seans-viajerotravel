@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, Download } from 'lucide-react';
+import { Plus, Search, Download, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import TravelTaskFormDialog from '@/components/travel/TravelTaskFormDialog';
 import TravelTaskTable from '@/components/travel/TravelTaskTable';
 import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
@@ -19,6 +19,8 @@ export default function TravelTasks() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [priorityFilter, setPriorityFilter] = useState('All');
   const [serviceFilter, setServiceFilter] = useState('All');
+  const [sortField, setSortField] = useState('created_date');
+  const [sortDir, setSortDir] = useState('desc');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -52,18 +54,39 @@ export default function TravelTasks() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['travel-tasks'] }),
   });
 
-  const filtered = tasks.filter(t => {
+  const toggleSort = (field) => {
+    if (sortField === field) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDir('asc');
+    }
+  };
+
+  const sortedAndFiltered = tasks
+    .filter(t => {
+
     const q = search.toLowerCase();
-    const matchSearch = !q ||
-      (t.description || '').toLowerCase().includes(q) ||
-      (t.client_name || '').toLowerCase().includes(q) ||
-      (t.assigned_to || '').toLowerCase().includes(q) ||
-      (t.task_id || '').toLowerCase().includes(q);
-    const matchStatus = statusFilter === 'All' || t.status === statusFilter;
-    const matchPriority = priorityFilter === 'All' || t.priority === priorityFilter;
-    const matchService = serviceFilter === 'All' || t.service_type === serviceFilter;
-    return matchSearch && matchStatus && matchPriority && matchService;
-  });
+      const matchSearch = !q ||
+        (t.description || '').toLowerCase().includes(q) ||
+        (t.client_name || '').toLowerCase().includes(q) ||
+        (t.assigned_to || '').toLowerCase().includes(q) ||
+        (t.task_id || '').toLowerCase().includes(q);
+      const matchStatus = statusFilter === 'All' || t.status === statusFilter;
+      const matchPriority = priorityFilter === 'All' || t.priority === priorityFilter;
+      const matchService = serviceFilter === 'All' || t.service_type === serviceFilter;
+      return matchSearch && matchStatus && matchPriority && matchService;
+    })
+    .sort((a, b) => {
+      let aVal = a[sortField] || '';
+      let bVal = b[sortField] || '';
+      if (sortField === 'task_id') {
+        const aNum = parseInt((aVal).replace('T-', ''), 10) || 0;
+        const bNum = parseInt((bVal).replace('T-', ''), 10) || 0;
+        return sortDir === 'asc' ? aNum - bNum : bNum - aNum;
+      }
+      return sortDir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    });
 
   const logActivity = (action, form, oldTask = null) => {
     const today = new Date().toISOString().split('T')[0];
@@ -130,7 +153,7 @@ export default function TravelTasks() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Task Manager</h1>
-          <p className="text-muted-foreground text-sm">{filtered.length} of {tasks.length} tasks</p>
+          <p className="text-muted-foreground text-sm">{sortedAndFiltered.length} of {tasks.length} tasks</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setExportOpen(true)} className="gap-2">
@@ -162,8 +185,32 @@ export default function TravelTasks() {
         </Select>
       </div>
 
+      {/* Sort controls */}
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <span className="text-muted-foreground text-xs">Sort by:</span>
+        {[
+          { label: 'Task ID', field: 'task_id' },
+          { label: 'Client', field: 'client_name' },
+          { label: 'Start Date', field: 'start_date' },
+          { label: 'Due Date', field: 'due_date' },
+        ].map(({ label, field }) => (
+          <Button
+            key={field}
+            variant={sortField === field ? 'default' : 'outline'}
+            size="sm"
+            className="gap-1 h-7 text-xs"
+            onClick={() => toggleSort(field)}
+          >
+            {label}
+            {sortField === field
+              ? sortDir === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+              : <ArrowUpDown className="w-3 h-3 opacity-40" />}
+          </Button>
+        ))}
+      </div>
+
       <TravelTaskTable
-        tasks={filtered}
+        tasks={sortedAndFiltered}
         isLoading={isLoading}
         onEdit={(task) => { setEditing(task); setDialogOpen(true); }}
         onDelete={(id) => { setDeleteTarget(id); setDeleteConfirmOpen(true); }}

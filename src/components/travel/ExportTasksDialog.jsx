@@ -3,21 +3,22 @@ import * as XLSX from 'xlsx';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Download } from 'lucide-react';
+import { Download, CalendarIcon } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
 
 export default function ExportTasksDialog({ open, onOpenChange, tasks }) {
-  const today = new Date().toISOString().split('T')[0];
-  const [startDate, setStartDate] = useState(today);
-  const [endDate, setEndDate] = useState(today);
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
 
   const handleExport = () => {
     const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
     const end = new Date(endDate);
     end.setHours(23, 59, 59, 999);
 
     const filtered = tasks.filter(t => {
-      // Filter by due_date; fall back to created_date if no due_date
       const dateStr = t.due_date || t.created_date;
       if (!dateStr) return false;
       const d = new Date(dateStr);
@@ -58,7 +59,7 @@ export default function ExportTasksDialog({ open, onOpenChange, tasks }) {
     }));
     ws['!cols'] = colWidths;
 
-    const fileName = `tasks_${startDate}_to_${endDate}.xlsx`;
+    const fileName = `tasks_${format(startDate, 'yyyy-MM-dd')}_to_${format(endDate, 'yyyy-MM-dd')}.xlsx`;
     XLSX.writeFile(wb, fileName);
     onOpenChange(false);
   };
@@ -73,11 +74,31 @@ export default function ExportTasksDialog({ open, onOpenChange, tasks }) {
           <p className="text-sm text-muted-foreground">Tasks will be filtered by <strong>Due Date</strong> within the selected range.</p>
           <div>
             <Label>Start Date</Label>
-            <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-start text-left font-normal">
+                  <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                  {startDate ? format(startDate, 'MMM d, yyyy') : 'Pick a date'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={startDate} onSelect={d => d && setStartDate(d)} initialFocus />
+              </PopoverContent>
+            </Popover>
           </div>
           <div>
             <Label>End Date</Label>
-            <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-start text-left font-normal">
+                  <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                  {endDate ? format(endDate, 'MMM d, yyyy') : 'Pick a date'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={endDate} onSelect={d => d && setEndDate(d)} initialFocus />
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
         <DialogFooter>
