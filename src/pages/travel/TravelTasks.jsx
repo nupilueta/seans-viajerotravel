@@ -78,13 +78,19 @@ export default function TravelTasks() {
       return matchSearch && matchStatus && matchPriority && matchService;
     })
     .sort((a, b) => {
-      let aVal = a[sortField] || '';
-      let bVal = b[sortField] || '';
       if (sortField === 'task_id') {
-        const aNum = parseInt((aVal).replace('T-', ''), 10) || 0;
-        const bNum = parseInt((bVal).replace('T-', ''), 10) || 0;
+        const aNum = parseInt((a.task_id || '').replace('T-', ''), 10) || 0;
+        const bNum = parseInt((b.task_id || '').replace('T-', ''), 10) || 0;
         return sortDir === 'asc' ? aNum - bNum : bNum - aNum;
       }
+      if (sortField === 'client_name') {
+        const getSurname = name => (name || '').trim().split(' ').pop().toLowerCase();
+        const aVal = getSurname(a.client_name);
+        const bVal = getSurname(b.client_name);
+        return sortDir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+      }
+      const aVal = a[sortField] || '';
+      const bVal = b[sortField] || '';
       return sortDir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
     });
 
