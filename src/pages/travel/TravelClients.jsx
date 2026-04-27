@@ -4,9 +4,10 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Plus, Search, Pencil, Trash2, User, Phone, Mail, Building2 } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, User, Phone, Mail, Building2, Download } from 'lucide-react';
 import ClientFormDialog from '@/components/travel/ClientFormDialog';
 import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
+import ExportClientsDialog from '@/components/travel/ExportClientsDialog';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -19,6 +20,7 @@ export default function TravelClients() {
   const [editing, setEditing] = useState(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [exportOpen, setExportOpen] = useState(false);
   const qc = useQueryClient();
 
   const { data: clients = [], isLoading } = useQuery({
@@ -76,9 +78,14 @@ export default function TravelClients() {
           <h1 className="text-2xl font-bold">Clients</h1>
           <p className="text-muted-foreground text-sm">{clients.length} total clients</p>
         </div>
-        <Button onClick={() => { setEditing(null); setDialogOpen(true); }} className="gap-2">
-          <Plus className="w-4 h-4" /> Add Client
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setExportOpen(true)} className="gap-2">
+            <Download className="w-4 h-4" /> Export Excel
+          </Button>
+          <Button onClick={() => { setEditing(null); setDialogOpen(true); }} className="gap-2">
+            <Plus className="w-4 h-4" /> Add Client
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-2">
@@ -173,6 +180,12 @@ export default function TravelClients() {
           )}
         </div>
       )}
+
+      <ExportClientsDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        clients={clients}
+      />
 
       <ClientFormDialog
         open={dialogOpen}
