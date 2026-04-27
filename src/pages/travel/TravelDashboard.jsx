@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, ClipboardList, CheckCircle2, Clock, AlertCircle, TrendingUp, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import TaskStatusTab from '@/components/travel/TaskStatusTab';
 
 const STATUS_COLORS = {
   'Completed': '#10b981',
@@ -80,6 +82,18 @@ export default function TravelDashboard() {
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
         <p className="text-muted-foreground text-sm mt-1">Overview of all clients and tasks</p>
       </div>
+
+      <Tabs defaultValue="overview">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="task-status">Task Status</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="task-status" className="mt-4">
+          <TaskStatusTab tasks={tasks} />
+        </TabsContent>
+
+        <TabsContent value="overview" className="mt-4 space-y-6">
 
       {/* Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -224,6 +238,8 @@ export default function TravelDashboard() {
           </div>
         </Card>
       </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
