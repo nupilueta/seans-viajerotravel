@@ -26,6 +26,9 @@
         "Travel Insurance",
         "Receipt",
         "Credit Card Payment",
+        "Customer Booking",
+        "Customer Inquiries",
+        "Partner Coordination",
         "Other"
       ]
     },

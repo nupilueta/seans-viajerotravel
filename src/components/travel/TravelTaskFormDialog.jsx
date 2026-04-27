@@ -23,7 +23,7 @@ const DEFAULTS = {
 const DEFAULT_STAFF = ['JUN', 'NORBY', 'GEMMA', 'KAITO', 'ALDRIN', 'NICHOLE', 'RED', 'RHONA', 'RONIE', 'LENY'];
 const DEFAULT_STATUSES = ['Not Started', 'In Progress', 'Waiting for Client', 'Submitted', 'Completed', 'Cancelled'];
 const DEFAULT_PRIORITIES = ['High', 'Medium', 'Low'];
-const DEFAULT_SERVICE_TYPES = ['Visa Processing', 'Airline Ticket', 'Tour Package', 'Hotel Booking', 'Travel Insurance', 'Receipt', 'Credit Card Payment', 'Other'];
+const DEFAULT_SERVICE_TYPES = ['Visa Processing', 'Airline Ticket', 'Tour Package', 'Hotel Booking', 'Travel Insurance', 'Receipt', 'Credit Card Payment', 'Customer Booking', 'Customer Inquiries', 'Partner Coordination', 'Other'];
 const DEFAULT_PAYMENT_STATUSES = ['Unpaid', 'Partial', 'Paid', 'With Balance', 'Accounts Receivable', 'Not Applicable'];
 
 export default function TravelTaskFormDialog({ open, onOpenChange, task, clients = [], tasks = [], onSave, isAdmin }) {

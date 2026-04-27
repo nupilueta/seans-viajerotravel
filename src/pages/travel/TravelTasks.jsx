@@ -12,7 +12,7 @@ import ExportTasksDialog from '@/components/travel/ExportTasksDialog';
 
 const STATUSES = ['All', 'Not Started', 'In Progress', 'Waiting for Client', 'Submitted', 'Completed', 'Cancelled'];
 const PRIORITIES = ['All', 'High', 'Medium', 'Low'];
-const SERVICE_TYPES = ['All', 'Visa Processing', 'Airline Ticket', 'Tour Package', 'Hotel Booking', 'Travel Insurance', 'Receipt', 'Credit Card Payment', 'Other'];
+const SERVICE_TYPES = ['All', 'Visa Processing', 'Airline Ticket', 'Tour Package', 'Hotel Booking', 'Travel Insurance', 'Receipt', 'Credit Card Payment', 'Customer Booking', 'Customer Inquiries', 'Partner Coordination', 'Other'];
 
 export default function TravelTasks() {
   const [search, setSearch] = useState('');
