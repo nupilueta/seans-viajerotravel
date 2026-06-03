@@ -11,26 +11,9 @@ import { format } from 'date-fns';
 export default function ExportTasksDialog({ open, onOpenChange, tasks }) {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
+  const [exportMode, setExportMode] = useState('range'); // 'range' | 'all'
 
-  const handleExport = () => {
-    const start = new Date(startDate);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(endDate);
-    end.setHours(23, 59, 59, 999);
-
-    const filtered = tasks.filter(t => {
-      const dateStr = t.due_date || t.created_date;
-      if (!dateStr) return false;
-      const d = new Date(dateStr);
-      return d >= start && d <= end;
-    });
-
-    if (filtered.length === 0) {
-      alert('No tasks found in the selected date range.');
-      return;
-    }
-
-    const rows = filtered.map(t => ({
+  const buildRows = (list) => list.map(t => ({
       'Task ID': t.task_id || '',
       'Client Name': t.client_name || '',
       'Client ID': t.client_id || '',
@@ -49,17 +32,42 @@ export default function ExportTasksDialog({ open, onOpenChange, tasks }) {
       'Notes': t.notes || '',
     }));
 
+  const handleExport = () => {
+    let filtered;
+    let fileName;
+
+    if (exportMode === 'all') {
+      filtered = tasks;
+      fileName = `tasks_all_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+    } else {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      filtered = tasks.filter(t => {
+        const dateStr = t.due_date || t.created_date;
+        if (!dateStr) return false;
+        const d = new Date(dateStr);
+        return d >= start && d <= end;
+      });
+      fileName = `tasks_${format(startDate, 'yyyy-MM-dd')}_to_${format(endDate, 'yyyy-MM-dd')}.xlsx`;
+    }
+
+    if (filtered.length === 0) {
+      alert('No tasks found.');
+      return;
+    }
+
+    const rows = buildRows(filtered);
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Tasks');
 
-    // Auto column widths
     const colWidths = Object.keys(rows[0] || {}).map(key => ({
       wch: Math.max(key.length, ...rows.map(r => String(r[key] || '').length)) + 2
     }));
     ws['!cols'] = colWidths;
 
-    const fileName = `tasks_${format(startDate, 'yyyy-MM-dd')}_to_${format(endDate, 'yyyy-MM-dd')}.xlsx`;
     XLSX.writeFile(wb, fileName);
     onOpenChange(false);
   };
@@ -71,6 +79,22 @@ export default function ExportTasksDialog({ open, onOpenChange, tasks }) {
           <DialogTitle>Export Tasks to Excel</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
+          <div className="flex gap-2">
+            <Button
+              variant={exportMode === 'range' ? 'default' : 'outline'}
+              size="sm"
+              className="flex-1"
+              onClick={() => setExportMode('range')}
+            >By Date Range</Button>
+            <Button
+              variant={exportMode === 'all' ? 'default' : 'outline'}
+              size="sm"
+              className="flex-1"
+              onClick={() => setExportMode('all')}
+            >All Records ({tasks.length})</Button>
+          </div>
+
+          {exportMode === 'range' && <>
           <p className="text-sm text-muted-foreground">Tasks will be filtered by <strong>Due Date</strong> within the selected range.</p>
           <div>
             <Label>Start Date</Label>
@@ -100,6 +124,11 @@ export default function ExportTasksDialog({ open, onOpenChange, tasks }) {
               </PopoverContent>
             </Popover>
           </div>
+          </>}
+
+          {exportMode === 'all' && (
+            <p className="text-sm text-muted-foreground">All <strong>{tasks.length} tasks</strong> will be exported regardless of date.</p>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
